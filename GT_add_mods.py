@@ -1,5 +1,8 @@
-from os.path import isfile,splitext
+from os.path import isfile,splitext,isdir
+from os import unlink
 import re
+import os
+import shutil
 
 class entry:
     '''设置项的描述'''
@@ -110,5 +113,23 @@ class Config:
             
     @property
     def config(self) ->ini_config | cfg_config:
-        return eval(f'{self.file_type}_config("{self.path}")')
+        return eval(f'{self.file_type}_config("{self.path}")')   
+
+class file_manage:
+    def __init__(self) -> None:
+        pass
+    def move(self,old_path,new_path):
+        shutil.move(old_path,new_path)
     
+    def copy(self,main_path,aim_path):
+        if isdir(main_path):
+            shutil.copytree(main_path,aim_path)
+        if isfile(main_path):
+            shutil.copy(main_path,aim_path)
+    
+    def rm(self,path):
+        if isdir(path):
+            shutil.rmtree(path)
+        if isfile(path):
+            unlink(path)
+            
