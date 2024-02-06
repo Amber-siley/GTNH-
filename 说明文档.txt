@@ -1,1 +1,7 @@
+#删除的mod
+CraftPresence.jar   discord相关
+defaultserverlist.jar   默认多人服务器
+HardcoreDarkness-MC.jar 真实黑暗
+
+#添加的额外mod
 Smooth Font	平滑字体	需要修改配置文件/config/fastcraft.ini enableFontRendererTweaks=false
