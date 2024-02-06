@@ -1,8 +1,37 @@
-from os.path import isfile,splitext,isdir
-from os import unlink
+from os.path import isfile,splitext,isdir,basename,dirname,exists
+from os.path import join as join_path
+from os import unlink,getcwd,rename,walk
+from zipfile import ZipFile
 import re
-import os
 import shutil
+import requests
+
+#DEFINE
+#删除的mod
+rm_mods={
+    'CraftPresence.jar':("discord相关",r"CraftPresence.*\.jar"),
+    'defaultserverlist.jar':("默认添加的多人服务器",r"defaultserverlist.*\.jar"),
+    'HardcoreDarkness-MC.jar':("更真实的黑暗",r"HardcoreDarkness-MC.*\.jar")
+}
+'''Use:
+>>> {"方便记忆的模组文件名":("一句话介绍或者为None",“模组名称的正则表达式”)}'''
+
+#添加的mod
+add_mods={
+    'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
+    
+}
+
+#修改的配置文件
+set_configs={
+    "fastcraft.ini":("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false"),
+    
+}
+
+header={
+    "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
+}
+
 
 class entry:
     '''设置项的描述'''
@@ -107,7 +136,7 @@ class Config:
     def __init__(self,path:str) -> None:
         if isfile(path):
             self.path=path
-            self.file_type=splitext(self.path)[-1][1:]
+            self.file_type=file_manage(file_path=self.path).file_type
         else:
             raise ValueError("文件路径错误")
             
@@ -116,20 +145,123 @@ class Config:
         return eval(f'{self.file_type}_config("{self.path}")')   
 
 class file_manage:
-    def __init__(self) -> None:
-        pass
-    def move(self,old_path,new_path):
-        shutil.move(old_path,new_path)
+    def __init__(self,work_path=None,file_path:str=None) -> None:
+        if not work_path:
+            self.work_path=getcwd()
+        else:
+            self.work_path=work_path
+        if file_path:
+            file_infor=splitext(file_path)
+            self.file_path=file_path
+            self.save_path=dirname(file_path)
+            self.file_name=basename(file_path)
+            self.file_type=file_infor[-1][1:]
     
-    def copy(self,main_path,aim_path):
+    def mv(self,old_path,new_path):
+        if not exists(new_path):
+            shutil.move(old_path,new_path)
+        else:
+            self.cp(old_path,new_path)
+            self.rm(old_path)
+    
+    @staticmethod
+    def cp(main_path,aim_path):
         if isdir(main_path):
-            shutil.copytree(main_path,aim_path)
+            shutil.copytree(main_path,aim_path,dirs_exist_ok=True)
         if isfile(main_path):
             shutil.copy(main_path,aim_path)
     
-    def rm(self,path):
+    @staticmethod
+    def rm(path):
         if isdir(path):
             shutil.rmtree(path)
         if isfile(path):
             unlink(path)
-            
+    
+    def unzip(self,file_path,save_path=None,retain:bool=True) ->str:
+        file=ZipFile(file_path)
+        if not save_path:
+            save_path=self.work_path
+        file.extractall(save_path)
+        unzip_file_path=join_path(self.work_path,file.namelist()[0][:-1])
+        if not retain:
+            del file
+            self.rm(file_path)
+        return unzip_file_path
+    
+    @staticmethod
+    def save(content:bytes,save_file_path:str=None):
+        with open(save_file_path,"wb") as fp:
+            fp.write(content)
+    
+    @staticmethod
+    def rename(src,dst):
+        rename(src,dst)
+    
+    def ls(self) ->list[str]:
+        return [join_path(dirpath,file) for dirpath,dirnames,filenames in walk(self.work_path) for file in filenames]
+    
+class url_manage:
+    def __init__(self) -> None:
+        pass
+    
+    @staticmethod
+    def dowload(d_url:str,save_path=None) ->str:
+        '''默认保存在当前工作目录'''
+        if not save_path:
+            save_path=getcwd()
+        file_name=d_url.split("/")[-1]
+        save_file_path=join_path(save_path,file_name)
+        file=requests.get(d_url,headers=header).content
+        file_manage.save(file,save_file_path)
+        return save_file_path
+
+class progress_bar:
+    def __init__(self,max:int,title:str=None,progress_item:str="■") -> None:
+        self._max=max
+        self.title=title
+        self._progress_item=progress_item
+    
+    def show(self,value,title=None):
+        if title:
+           self.title=title 
+        proportion=int(value/self._max*20)
+        if proportion == 20:
+            print(f" {self.title} :","\t【{:▢<20}】 complete".format(self._progress_item*proportion))
+        else:
+            print(f" {self.title} :","\t【{:▢<20}】".format(self._progress_item*proportion),end="\r")
+    
+def set_chinese_file():
+    scf_p=progress_bar(5,"汉化文件安装")
+    fm=file_manage()
+    file_path=url_manage.dowload("https://github.com/Kiwi233/Translation-of-GTNH/archive/refs/heads/master.zip")
+    scf_p.show(1)
+    file_path=fm.unzip(file_path,retain=False)
+    scf_p.show(2)
+    del_item=[".github","scripts",".gitignore","zh_CN_GT5.09.32pre6.lang","LICENSE"]
+    for i in del_item:
+        del_path=join_path(file_path,i)
+        fm.rm(del_path)
+    scf_p.show(3)
+    config=join_path(file_path,"config")
+    resources=join_path(file_path,"resources")
+    txloader=join_path(config,"txloader")
+    forceload=join_path(txloader,"forceload")
+    fm.mv(resources,forceload)
+    scf_p.show(4)
+    fm.mv(file_path,getcwd())
+    scf_p.show(5)
+    
+def dowload_mods():
+    ...
+    
+def rm_file():
+    '''删除不需要的文件或者模组'''
+    for name,infor in rm_mods.items():
+        rf_p=progress_bar(1,"删除mod")
+        rule=infor[-1]
+        rf_p.show(1,f"删除mod【{name}】")
+        fm=file_manage(join_path(getcwd(),"mods"))
+        for i in fm.ls():
+            if re.findall(rule,i):
+                fm.rm(i)
