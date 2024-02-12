@@ -19,7 +19,15 @@ rm_mods={
 #添加的mod
 add_mods={
     'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
-    
+    'Twist Space Technolgy Mod':("扭曲空间科技","https://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.15-2.5.1fitted/TwistSpaceTechnology-0.4.15-2.5.1fitted.jar"),
+    'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
+    'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
+    'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
+    'FpsReducer':("FPS减速器","https://mediafilez.forgecdn.net/files/2627/303/FpsReducer-mc1.7.10-1.10.3.jar"),
+    'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
+    'Not Enough Characters':("NEI 拼音搜索","https://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
+    "NoFog":("移除所有舞","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
+    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/4475/975/OmniOcular-1.7.10-1.0-java8%2C17-20.jar"),
 }
 
 #修改的配置文件
@@ -32,6 +40,8 @@ header={
     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
 }
 
+mods_path=join_path(getcwd(),"mods")
+config_path=join_path(getcwd(),"config")
 
 class entry:
     '''设置项的描述'''
@@ -46,7 +56,7 @@ class entry:
         return self.format.format(conf=self.conf,value=self.value)
     
 class ini_config:
-    '''ini文件实现'''
+    '''ini文件实现，感觉不需要section'''
     def __init__(self,path) -> None:
         self.path=path
         self._index=0
@@ -142,7 +152,10 @@ class Config:
             
     @property
     def config(self) ->ini_config | cfg_config:
-        return eval(f'{self.file_type}_config("{self.path}")')   
+        if self.file_type=="ini":
+            return ini_config(self.path)
+        elif self.file_type=="cfg":
+            return cfg_config(self.path)
 
 class file_manage:
     def __init__(self,work_path=None,file_path:str=None) -> None:
@@ -221,15 +234,16 @@ class progress_bar:
         self._max=max
         self.title=title
         self._progress_item=progress_item
+        self.show(0)
     
     def show(self,value,title=None):
         if title:
            self.title=title 
         proportion=int(value/self._max*20)
         if proportion == 20:
-            print(f" {self.title} :","\t【{:▢<20}】 complete".format(self._progress_item*proportion))
+            print(f" {self.title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
         else:
-            print(f" {self.title} :","\t【{:▢<20}】".format(self._progress_item*proportion),end="\r")
+            print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
     
 def set_chinese_file():
     scf_p=progress_bar(5,"汉化文件安装")
@@ -253,15 +267,46 @@ def set_chinese_file():
     scf_p.show(5)
     
 def dowload_mods():
-    ...
+    for name,infor in add_mods.items():
+        add_p=progress_bar(1,"添加mod")
+        url=infor[-1]
+        fm=file_manage(mods_path)
+        url_manage.dowload(url,mods_path)
+        add_p.show(1,f"下载mod {name} ")
     
 def rm_file():
     '''删除不需要的文件或者模组'''
     for name,infor in rm_mods.items():
         rf_p=progress_bar(1,"删除mod")
         rule=infor[-1]
-        rf_p.show(1,f"删除mod【{name}】")
-        fm=file_manage(join_path(getcwd(),"mods"))
+        fm=file_manage(mods_path)
         for i in fm.ls():
             if re.findall(rule,i):
                 fm.rm(i)
+        rf_p.show(1,f"删除mod【{name}】")
+        
+def set_config():
+    for name,config in set_configs.items():
+        fg_p=progress_bar(1,"配置文件")
+        config_file=join_path(config_path,name)
+        cg=Config(config_file).config
+        cg.set_config(config[-2],config[-1])
+        fg_p.show(1,f"配置文件 {name}.{config[-2]} ")
+
+def main():
+    type=int(input(\
+        "请选择模式,推荐先使用1下载和删除文件运行游戏后,关闭游戏,再执行模式2\n\
+            1 :下载模组,删除不必要的文件\n\
+            2 :修改配置文件\n\
+        请输入编号："
+        ))
+    if type not in (1,2):
+        raise ValueError("输入参数错误")
+    if type == 1:
+        rm_file()
+        dowload_mods()
+        set_chinese_file()
+    else:
+        set_config()
+        
+main()
