@@ -27,15 +27,20 @@ add_mods={
     'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
     'Not Enough Characters':("NEI 拼音搜索","https://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
     "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
-    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/4475/975/OmniOcular-1.7.10-1.0-java8%2C17-20.jar"),
-    'CustomSkinloader':("万用皮肤补丁14.13，要支持1.7.10需安装skinport或CLFCSL（二选一）","https://mediafilez.forgecdn.net/files/3695/974/CustomSkinLoader_ForgeLegacy-14.13.jar"),
-    'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar")
+    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
+    'CustomSkinloader':("万用皮肤补丁14.6a",("https://modfile.mcmod.cn/action/download/?key=a1ca79539773703d72f73596f7af6e05","CustomSkinLoader_1.7.10-14.6a.jar")),
+    'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
+    'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar"),
+    'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar")
 }
 
 #修改的配置文件
 set_configs={
-    "fastcraft.ini":("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false"),
-    
+    "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
+    ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",1440),\
+                                    ("存档配置文件 保持备份数量","keep",5),\
+                                    ("存档配置文件 打开存档时备份","onStartup","false"),\
+                                    ("存档配置文件 压缩率","compressionRate",9)]
 }
 
 header={
@@ -225,7 +230,11 @@ class url_manage:
         '''默认保存在当前工作目录'''
         if not save_path:
             save_path=getcwd()
-        file_name=d_url.split("/")[-1]
+        if isinstance(d_url,tuple):
+            file_name=d_url[-1]
+            d_url=d_url[0]
+        else:
+            file_name=d_url.split("/")[-1]
         save_file_path=join_path(save_path,file_name)
         file=requests.get(d_url,headers=header).content
         file_manage.save(file,save_file_path)
@@ -272,7 +281,6 @@ def dowload_mods():
     for name,infor in add_mods.items():
         add_p=progress_bar(1,"添加mod")
         url=infor[-1]
-        fm=file_manage(mods_path)
         url_manage.dowload(url,mods_path)
         add_p.show(1,f"下载mod {name} ")
     
@@ -289,11 +297,18 @@ def rm_file():
         
 def set_config():
     for name,config in set_configs.items():
-        fg_p=progress_bar(1,"配置文件")
-        config_file=join_path(config_path,name)
-        cg=Config(config_file).config
-        cg.set_config(config[-2],config[-1])
-        fg_p.show(1,f"配置文件 {name}.{config[-2]} ")
+        if isinstance(name,str):
+            config_file=join_path(config_path,name)
+        else:
+            config_file=join_path(config_path,*name)
+        try:
+            cg=Config(config_file).config
+        except ValueError:
+            continue
+        for option in config:
+            cg.set_config(option[-2],option[-1])
+            fg_p=progress_bar(1,"配置文件")
+            fg_p.show(1,f"配置文件 {name}.{option[-2]} ")
 
 def main():
     type=int(input(\
@@ -308,6 +323,7 @@ def main():
         rm_file()
         dowload_mods()
         set_chinese_file()
+        set_config()
     else:
         set_config()
         
