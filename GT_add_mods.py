@@ -26,8 +26,10 @@ add_mods={
     'FpsReducer':("FPS减速器","https://mediafilez.forgecdn.net/files/2627/303/FpsReducer-mc1.7.10-1.10.3.jar"),
     'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
     'Not Enough Characters':("NEI 拼音搜索","https://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
-    "NoFog":("移除所有舞","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
+    "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
     "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/4475/975/OmniOcular-1.7.10-1.0-java8%2C17-20.jar"),
+    'CustomSkinloader':("万用皮肤补丁14.13，要支持1.7.10需安装skinport或CLFCSL（二选一）","https://mediafilez.forgecdn.net/files/3695/974/CustomSkinLoader_ForgeLegacy-14.13.jar"),
+    'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar")
 }
 
 #修改的配置文件
