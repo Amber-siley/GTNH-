@@ -34,13 +34,28 @@ add_mods={
     'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar")
 }
 
-#修改的配置文件
+#config目录下需修改的配置文件
 set_configs={
     "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
     ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",1440),\
                                     ("存档配置文件 保持备份数量","keep",5),\
                                     ("存档配置文件 打开存档时备份","onStartup","false"),\
                                     ("存档配置文件 压缩率","compressionRate",9)]
+}
+
+#其他 文件或者文件夹
+other_file={
+    'options.txt':
+        {
+            'type':"local",             #文件类型，本地文件local or 网络文件online
+            'location':None,            #位置，当为local文件时有意义，None默认游戏根目录
+            'url':None,                 #下载网址，当为online文件时有意义，None无意义
+            'description':"游戏设置文件",#介绍
+            'is_zip':False,             #是否是zip压缩文件
+            'need_unzip':False,         #是否需要解压操作
+            'action_type':'copy',       #执行的类型，复制copy，完整移动move，不包含主目录移动nr_move
+            'save_location':None        #复制的保存路径，None表示脚本当前工作目录
+        },
 }
 
 header={
@@ -311,6 +326,8 @@ def set_config():
             fg_p.show(1,f"配置文件 {name}.{option[-2]} ")
 
 def main():
+    if __name__!="__main__":
+        return 0
     type=int(input(\
         "请选择模式,推荐先使用1下载和删除文件运行游戏后,关闭游戏,再执行模式2\n\
             1 :下载模组,删除不必要的文件\n\
@@ -326,5 +343,5 @@ def main():
         set_config()
     else:
         set_config()
-        
+
 main()
