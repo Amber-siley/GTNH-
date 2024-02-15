@@ -33,7 +33,8 @@ add_mods={
     'CustomSkinloader':("万用皮肤补丁14.6a",("https://modfile.mcmod.cn/action/download/?key=a1ca79539773703d72f73596f7af6e05","CustomSkinLoader_1.7.10-14.6a.jar")),
     'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
     'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar"),
-    'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar")
+    'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar"),
+    'dualhotbar':("双倍快捷栏","https://mediafilez.forgecdn.net/files/2212/352/dualhotbar-1.7.10-1.6.jar")
 }
 
 #config目录下需修改的配置文件
@@ -79,6 +80,17 @@ other_file={
             'retain_zip':True,
             'action_type':'copy',
             'save_location':('journeymap','data')
+        },
+    'GTNH-Faithful-Textures.0.9.6.zip':
+        {
+            'type':'online',
+            'url':"https://github.com/Ethryan/GTNH-Faithful-Textures/releases/download/0.9.6/GTNH-Faithful-Textures.0.9.6.zip",
+            'file_name':None,
+            'description':"GTNH Faithful材质包 ",
+            'need_unzip':False,
+            'retain_zip':False,
+            'action_type':'move',
+            'save_location':'resourcepacks'
         },
 }
 
@@ -374,7 +386,10 @@ def action_other_file():
         if not conf['save_location']:
             conf["save_location"]=fm.work_path
         else:
-            conf["save_location"]=join_path(fm.work_path,*conf["save_location"])
+            if  isinstance(conf["save_location"],tuple):
+                conf["save_location"]=join_path(fm.work_path,*conf["save_location"])
+            else:
+                conf["save_location"]=join_path(fm.work_path,conf["save_location"])
         if conf['action_type'] == 'copy':
             fm.cp(old_file_path,conf["save_location"])
         elif conf['action_type'] == 'move':
