@@ -1,7 +1,9 @@
 from os.path import isfile,splitext,isdir,basename,dirname,exists
 from os.path import join as join_path
+from os.path import split as split_path
 from os import unlink,getcwd,rename,walk
 from zipfile import ZipFile
+from tkinter.filedialog import askopenfilename,askdirectory
 import re
 import shutil
 import requests
@@ -48,13 +50,35 @@ other_file={
     'options.txt':
         {
             'type':"local",             #文件类型，本地文件local or 网络文件online
-            'location':None,            #位置，当为local文件时有意义，None默认游戏根目录
             'url':None,                 #下载网址，当为online文件时有意义，None无意义
-            'description':"游戏设置文件",#介绍
-            'is_zip':False,             #是否是zip压缩文件
+            'file_name':None,           #通过网络下载文件url中无文件名时需定义
+            'description':"游戏按键设置文件",#介绍
             'need_unzip':False,         #是否需要解压操作
+            'retain_zip':True,          #是否保留zip文件
             'action_type':'copy',       #执行的类型，复制copy，完整移动move，不包含主目录移动nr_move
             'save_location':None        #复制的保存路径，None表示脚本当前工作目录
+        },
+    'optionsof.txt':
+        {
+            'type':'local',
+            'url':None,
+            'file_name':None,
+            'description':"游戏视频设置文件",
+            'need_unzip':False,
+            'retain_zip':True,
+            'action_type':'copy',
+            'save_location':None
+        },
+    ('journeymap','data'):
+        {
+            'type':'local',
+            'url':None,
+            'file_name':None,
+            'description':"旅行地图数据文件",
+            'need_unzip':False,
+            'retain_zip':True,
+            'action_type':'copy',
+            'save_location':('journeymap','data')
         },
 }
 
@@ -192,13 +216,20 @@ class file_manage:
             self.file_name=basename(file_path)
             self.file_type=file_infor[-1][1:]
     
-    def mv(self,old_path,new_path):
+    def nr_mv(self,old_path,new_path):
+        '''not root move'''
         if not exists(new_path):
             shutil.move(old_path,new_path)
         else:
             self.cp(old_path,new_path)
             self.rm(old_path)
     
+    def mv(self,old_path,new_path):
+        if isdir(old_path):
+            dir=split_path(old_path)[-1]
+            new_path=join_path(new_path,dir)
+        self.nr_mv(old_path,new_path)
+        
     @staticmethod
     def cp(main_path,aim_path):
         if isdir(main_path):
@@ -241,14 +272,11 @@ class url_manage:
         pass
     
     @staticmethod
-    def dowload(d_url:str,save_path=None) ->str:
+    def dowload(d_url:str,save_path=None,file_name=None) ->str:
         '''默认保存在当前工作目录'''
         if not save_path:
             save_path=getcwd()
-        if isinstance(d_url,tuple):
-            file_name=d_url[-1]
-            d_url=d_url[0]
-        else:
+        if not file_name:
             file_name=d_url.split("/")[-1]
         save_file_path=join_path(save_path,file_name)
         file=requests.get(d_url,headers=header).content
@@ -287,16 +315,19 @@ def set_chinese_file():
     resources=join_path(file_path,"resources")
     txloader=join_path(config,"txloader")
     forceload=join_path(txloader,"forceload")
-    fm.mv(resources,forceload)
+    fm.nr_mv(resources,forceload)
     scf_p.show(4)
-    fm.mv(file_path,getcwd())
+    fm.nr_mv(file_path,getcwd())
     scf_p.show(5)
     
 def dowload_mods():
     for name,infor in add_mods.items():
         add_p=progress_bar(1,"添加mod")
-        url=infor[-1]
-        url_manage.dowload(url,mods_path)
+        url,file_name=infor[-1],None
+        if isinstance(url,tuple):
+            url=url[0]
+            file_name=url[-1]
+        url_manage.dowload(url,mods_path,file_name)
         add_p.show(1,f"下载mod {name} ")
     
 def rm_file():
@@ -325,23 +356,55 @@ def set_config():
             fg_p=progress_bar(1,"配置文件")
             fg_p.show(1,f"配置文件 {name}.{option[-2]} ")
 
+def action_other_file():
+    print("请选择需要转移的文件的游戏根目录")
+    old_path=askdirectory(title="请选择需要转移的文件的游戏根目录")
+    fm=file_manage()
+    for file,conf in other_file.items():
+        of_p=progress_bar(1,f"{conf['description']}")
+        if conf["type"] == 'local':
+            if isinstance(file,tuple):
+                old_file_path=join_path(old_path,*file)
+            else:
+                old_file_path=join_path(old_path,file)
+        elif conf["type"] == 'online':
+            old_file_path=url_manage.dowload(conf["url"],file_name=conf["file_name"])
+        if conf["need_unzip"]:
+            old_file_path=fm.unzip(old_file_path,retain=conf["retain_zip"])
+        if not conf['save_location']:
+            conf["save_location"]=fm.work_path
+        else:
+            conf["save_location"]=join_path(fm.work_path,*conf["save_location"])
+        if conf['action_type'] == 'copy':
+            fm.cp(old_file_path,conf["save_location"])
+        elif conf['action_type'] == 'move':
+            fm.mv(old_file_path,conf["save_location"])
+        elif conf["action_type"] == 'nr_move':
+            fm.nr_mv(old_file_path,conf["save_location"])
+        of_p.show(1)
+        
 def main():
-    if __name__!="__main__":
-        return 0
     type=int(input(\
-        "请选择模式,推荐先使用1下载和删除文件运行游戏后,关闭游戏,再执行模式2\n\
-            1 :下载模组,删除不必要的文件\n\
-            2 :修改配置文件\n\
-        请输入编号："
+        '''
+        本脚本不会进行操作存档文件，可以设置，但建议手动转移
+        请选择模式,推荐先使用1下载和删除文件运行游戏后，关闭游戏，再执行模式2，一般不用单独执行3
+            1 :下载模组,删除不必要的文件（包括3）
+            2 :修改配置文件
+            3 :其他文件的移动，下载
+        请输入编号：'''
         ))
-    if type not in (1,2):
+    if type not in (1,2,3):
         raise ValueError("输入参数错误")
     if type == 1:
         rm_file()
         dowload_mods()
         set_chinese_file()
         set_config()
-    else:
+        action_other_file()
+    elif type == 2:
         set_config()
+    elif type == 3:
+        action_other_file()
 
-main()
+if __name__ == "__main__":
+    main()
