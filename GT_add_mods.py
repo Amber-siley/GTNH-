@@ -310,6 +310,12 @@ class progress_bar:
             print(f" {self.title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
         else:
             print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
+
+def conf_join_path(main_path,*args:str | tuple):
+    if isinstance(main_path,tuple):
+        return join_path(main_path,*args)
+    else:
+        return join_path(main_path,args)
     
 def set_chinese_file():
     scf_p=progress_bar(5,"汉化文件安装")
@@ -355,10 +361,7 @@ def rm_file():
         
 def set_config():
     for name,config in set_configs.items():
-        if isinstance(name,str):
-            config_file=join_path(config_path,name)
-        else:
-            config_file=join_path(config_path,*name)
+        config_file=conf_join_path(config_path,name)
         try:
             cg=Config(config_file).config
         except ValueError:
@@ -371,14 +374,13 @@ def set_config():
 def action_other_file():
     print("请选择需要转移的文件的游戏根目录")
     old_path=askdirectory(title="请选择需要转移的文件的游戏根目录")
+    if not old_path:
+        return 0
     fm=file_manage()
     for file,conf in other_file.items():
         of_p=progress_bar(1,f"{conf['description']}")
         if conf["type"] == 'local':
-            if isinstance(file,tuple):
-                old_file_path=join_path(old_path,*file)
-            else:
-                old_file_path=join_path(old_path,file)
+            old_file_path=conf_join_path(old_path,file)
         elif conf["type"] == 'online':
             old_file_path=url_manage.dowload(conf["url"],file_name=conf["file_name"])
         if conf["need_unzip"]:
@@ -386,10 +388,7 @@ def action_other_file():
         if not conf['save_location']:
             conf["save_location"]=fm.work_path
         else:
-            if  isinstance(conf["save_location"],tuple):
-                conf["save_location"]=join_path(fm.work_path,*conf["save_location"])
-            else:
-                conf["save_location"]=join_path(fm.work_path,conf["save_location"])
+            conf["save_location"]=conf_join_path(fm.work_path,conf["save_location"])
         if conf['action_type'] == 'copy':
             fm.cp(old_file_path,conf["save_location"])
         elif conf['action_type'] == 'move':
