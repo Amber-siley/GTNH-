@@ -81,6 +81,17 @@ other_file={
             'action_type':'copy',
             'save_location':('journeymap','data')
         },
+    "visualprospecting":
+        {
+            'type':'local',
+            'url':None,
+            'file_name':None,
+            'description':"矿脉，油田文件",
+            'need_unzip':False,
+            'retain_zip':True,
+            'action_type':'copy',
+            'save_location':"visualprospecting"
+        },
     'GTNH-Faithful-Textures.0.9.6.zip':
         {
             'type':'online',
