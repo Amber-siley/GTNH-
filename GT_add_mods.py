@@ -322,8 +322,8 @@ class progress_bar:
         else:
             print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
 
-def conf_join_path(main_path,*args:str | tuple):
-    if isinstance(main_path,tuple):
+def conf_join_path(main_path,args:str | tuple):
+    if isinstance(args,tuple):
         return join_path(main_path,*args)
     else:
         return join_path(main_path,args)
@@ -412,10 +412,7 @@ def main():
     type=int(input(\
         '''
         本脚本不会进行操作存档文件，可以设置，但建议手动转移
-        请选择模式,推荐先使用1下载和删除文件运行游戏后，关闭游戏，再执行模式2，一般不用单独执行3
-            1 :下载模组,删除不必要的文件（包括3）
-            2 :修改配置文件
-            3 :其他文件的移动，下载
+        请选择模式，先运行游戏后，关闭游戏后，输入1运行脚本
         请输入编号：'''
         ))
     if type not in (1,2,3):
@@ -427,8 +424,10 @@ def main():
         set_config()
         action_other_file()
     elif type == 2:
+        '''设置配置文件'''
         set_config()
     elif type == 3:
+        ''''其他文件的修改'''
         action_other_file()
 
 if __name__ == "__main__":
