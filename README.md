@@ -10,8 +10,60 @@
 
 #### 说明
 > 每次GTNH升级版本后，私货模组，材质包，配置文件，不需要的模组和文件每次都需要重新配置，修改。
+ 
 > 但是使用本项目后，能够实现以上所有功能，且支持[自定义](#自定义文件处理)
+
 > 运行需要科学上网进行下载文件，复杂度过高的版本升级不建议使用本项目，而是本地存储私货文件夹
+
+更改的文件
+- 添加的文件:
+
+|           名称            |          注释           |
+| :-----------------------: | :---------------------: |
+|        Smooth Font        |        平滑字体         |
+| Twist Space Technolgy Mod |      扭曲空间科技       |
+|        AromaBackup        |        存档备份         |
+|       Aroma1997Core       |      存档备份前置       |
+|         inputfix          |      中文输入修复       |
+|        FpsReducer         |        FPS减速器        |
+|       NEI-Utilities       |       NEI实用工具       |
+|   Not Enough Characters   |      NEI 拼音搜索       |
+|           NoFog           |       移除所有雾        |
+|        OmniOcular         | 根据方块NBT信息显示内容 |
+|     CustomSkinloader      |    万用皮肤补丁14.6a    |
+|         skinport          |      支持纤细模型       |
+|         WorldEdit         |         创世神          |
+|      WorldEditCUIFe       |   创世神UI forge版本    |
+|        dualhotbar         |       双倍快捷栏        |
+|      translate—GTNH       |        汉化文件         |
+|  GTNH-Faithful-Textures   |   GTNH Faithful材质包   |
+
+- 删除的文件：
+
+|          名称           |         注释         |
+| :---------------------: | :------------------: |
+|    CraftPresence.jar    |     discord相关      |
+|  defaultserverlist.jar  | 默认添加的多人服务器 |
+| HardcoreDarkness-MC.jar |     更真实的黑暗     |
+
+- 修改的文件：
+
+|      名称       |            注释            |
+| :-------------: | :------------------------: |
+|  fastcraft.ini  | 要与平滑字体兼容需修改配置 |
+| AromaBackup.cfg |      备份间隔 24小时       |
+|                 |      备份最大数量 5个      |
+|                 |      取消打开存档备份      |
+|                 |        备份压缩率 9        |
+
+- 移动的文件：
+
+|       名称        |       注释       |
+| :---------------: | :--------------: |
+|    options.txt    | 游戏按键设置文件 |
+|   optionsof.txt   | 游戏视频设置文件 |
+| journeymap->data  | 旅行地图数据文件 |
+| visualprospecting |  矿脉，油田文件  |
 
 #### 例子
 ##### 1，安装游戏
