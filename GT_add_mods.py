@@ -3,12 +3,13 @@ from os.path import join as join_path
 from os.path import split as split_path
 from os import unlink,getcwd,rename,walk
 from zipfile import ZipFile
-from tkinter.filedialog import askopenfilename,askdirectory
+from tkinter.filedialog import askdirectory
 import re
 import shutil
 import requests
 
 #DEFINE
+proxy = 8080  #代理端口
 #删除的mod
 rm_mods={
     'CraftPresence.jar':("discord相关",r"CraftPresence.*\.jar"),
@@ -21,12 +22,14 @@ rm_mods={
 #添加的mod
 add_mods={
     'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
-    'Twist Space Technolgy Mod':("扭曲空间科技","https://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.15-2.5.1fitted/TwistSpaceTechnology-0.4.15-2.5.1fitted.jar"),
+    'Twist Space Technolgy Mod':("扭曲空间科技","http://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-2.6.1fitted-test-alpha/TwistSpaceTechnology-0.4.30-2.6.1fitted-test-alpha.jar"),
     'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
     'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
     'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
     'FpsReducer':("FPS减速器","https://mediafilez.forgecdn.net/files/2627/303/FpsReducer-mc1.7.10-1.10.3.jar"),
-    'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
+    'Extra Player Render':("额外玩家渲染","https://mediafilez.forgecdn.net/files/4287/440/extraplayerrenderer-1.7.10-1.0.1.jar"),
+    #2.6版本自带相同功能，已弃用
+    # 'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
     'Not Enough Characters':("NEI 拼音搜索","https://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
     "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
     "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
@@ -40,6 +43,7 @@ add_mods={
 #config目录下需修改的配置文件
 set_configs={
     "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
+    "angelica-modules.cfg":[("安洁莉卡配置文件 防止平滑字体重影","enableFontRenderer","false")],
     ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",1440),\
                                     ("存档配置文件 保持备份数量","keep",5),\
                                     ("存档配置文件 打开存档时备份","onStartup","false"),\
@@ -81,6 +85,17 @@ other_file={
             'action_type':'copy',
             'save_location':('journeymap','data')
         },
+    ('journeymap','config'):
+        {
+            'type':'local',
+            'url':None,
+            'file_name':None,
+            'description':"旅行地图配置文件",
+            'need_unzip':False,
+            'retain_zip':True,
+            'action_type':'copy',
+            'save_location':('journeymap','config')
+        },
     "visualprospecting":
         {
             'type':'local',
@@ -95,7 +110,7 @@ other_file={
     'GTNH-Faithful-Textures.0.9.6.zip':
         {
             'type':'online',
-            'url':"https://github.com/Ethryan/GTNH-Faithful-Textures/releases/download/0.9.6/GTNH-Faithful-Textures.0.9.6.zip",
+            'url':"http://github.com/Ethryan/GTNH-Faithful-Textures/releases/download/0.9.6/GTNH-Faithful-Textures.0.9.6.zip",
             'file_name':None,
             'description':"GTNH Faithful材质包 ",
             'need_unzip':False,
@@ -297,67 +312,94 @@ class url_manage:
     @staticmethod
     def dowload(d_url:str,save_path=None,file_name=None) ->str:
         '''默认保存在当前工作目录'''
+        if proxy:
+            proxies = {"http":f"http://127.0.0.1:{proxy}"}
         if not save_path:
             save_path=getcwd()
         if not file_name:
             file_name=d_url.split("/")[-1]
         save_file_path=join_path(save_path,file_name)
-        file=requests.get(d_url,headers=header).content
-        file_manage.save(file,save_file_path)
+        # file=requests.get(d_url,headers=header).content
+        if not proxy:
+            response = requests.get(d_url,headers=header,stream=True)
+        else:
+            response = requests.get(d_url,headers=header,stream=True,proxies=proxies)
+        content_max = int(response.headers['content-length'])
+        rf = progress_bar(content_max,f"下载文件 {file_name}")
+        data = bytes()
+        if response.ok:
+            ...
+        else:
+            raise ConnectionError()
+        for chunk in response.iter_content(1000000):
+            data += chunk
+            rf.show(len(data))
+        file_manage.save(data,save_file_path)
         return save_file_path
+
 
 class progress_bar:
     def __init__(self,max:int,title:str=None,progress_item:str="■") -> None:
+        if max == 0:
+            max = 1
         self._max=max
+        if max >= 1024:
+            self.mode = "dowload"
+        else:
+            self.mode = "normal"
         self.title=title
         self._progress_item=progress_item
         self.show(0)
+    
+    def store(self,byte:int) -> str:
+        unit="B"
+        if byte>1024:
+            byte>>=10
+            unit="KB"
+        if byte>1024:
+            byte>>=10
+            unit="MB"
+        return f"""{byte} {unit}"""  
     
     def show(self,value,title=None):
         if title:
            self.title=title 
         proportion=int(value/self._max*20)
-        if proportion == 20:
-            print(f" {self.title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
-        else:
-            print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
+        if self.mode == "normal":
+            if proportion == 20:
+                print(f" {self.title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
+            else:
+                print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
+        elif self.mode == "dowload":
+            if proportion == 20:
+                print(f" {self.title} :"+"\t【{:<20}】titol {} complete".format(self._progress_item*proportion,self.store(value)))
+            else:
+                print(f" {self.title} :"+"\t【{:<20}】titol {}".format(self._progress_item*proportion,self.store(value)),end="\r")
 
 def conf_join_path(main_path,args:str | tuple):
     if isinstance(args,tuple):
         return join_path(main_path,*args)
     else:
         return join_path(main_path,args)
-    
-def set_chinese_file():
-    scf_p=progress_bar(5,"汉化文件安装")
-    fm=file_manage()
-    file_path=url_manage.dowload("https://github.com/Kiwi233/Translation-of-GTNH/archive/refs/heads/master.zip")
-    scf_p.show(1)
-    file_path=fm.unzip(file_path,retain=False)
-    scf_p.show(2)
-    del_item=[".github","scripts",".gitignore","zh_CN_GT5.09.32pre6.lang","LICENSE"]
-    for i in del_item:
-        del_path=join_path(file_path,i)
-        fm.rm(del_path)
-    scf_p.show(3)
-    config=join_path(file_path,"config")
-    resources=join_path(file_path,"resources")
-    txloader=join_path(config,"txloader")
-    forceload=join_path(txloader,"forceload")
-    fm.nr_mv(resources,forceload)
-    scf_p.show(4)
-    fm.nr_mv(file_path,getcwd())
-    scf_p.show(5)
-    
+
+#2.6版本官方自带汉化，已弃用
+# def set_chinese_file():
+
+def dowload_GTNH():
+    urls = requests.get(url="http://downloads.gtnewhorizons.com/ClientPacks/?raw",headers=header).text.split()
+    versions = [i.split("/")[-1] for i in urls]
+    num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"{index+1},{ver}" for index,ver in enumerate(versions)])+"\n"))
+    file_path = url_manage.dowload(d_url=urls[num-1],file_name=versions[num-1])
+    fm = file_manage()
+    fm.unzip(file_path=file_path,retain=False)
+
 def dowload_mods():
     for name,infor in add_mods.items():
-        add_p=progress_bar(1,"添加mod")
         url,file_name=infor[-1],None
         if isinstance(url,tuple):
             url=url[0]
             file_name=url[-1]
         url_manage.dowload(url,mods_path,file_name)
-        add_p.show(1,f"下载mod {name} ")
     
 def rm_file():
     '''删除不需要的文件或者模组'''
@@ -412,23 +454,30 @@ def main():
     type=int(input(\
         '''
         本脚本不会进行操作存档文件，可以设置，但建议手动转移
-        请选择模式，先运行游戏后，关闭游戏后，输入1运行脚本
+        请选择模式，
+        1，安装GTNH
+        2，（请在运行并结束GTNH生成配置文件后再运行）设置私货，配置文件，下载材质包
         请输入编号：'''
         ))
-    if type not in (1,2,3):
+    if type not in range(1,6):
         raise ValueError("输入参数错误")
     if type == 1:
+        dowload_GTNH()
+    elif type == 2:
         rm_file()
         dowload_mods()
-        set_chinese_file()
+        # set_chinese_file()
         set_config()
         action_other_file()
-    elif type == 2:
+    elif type == 3:
         '''设置配置文件'''
         set_config()
-    elif type == 3:
+    elif type == 4:
         ''''其他文件的修改'''
         action_other_file()
+    elif type == 5:
+        '''汉化文件下载'''
+        # set_chinese_file()
 
 if __name__ == "__main__":
     main()
