@@ -9,7 +9,7 @@ import shutil
 import requests
 
 #DEFINE
-proxy = 8080  #代理端口
+proxy:int = None #代理端口
 #删除的mod
 rm_mods={
     'CraftPresence.jar':("discord相关",r"CraftPresence.*\.jar"),
@@ -331,7 +331,7 @@ class url_manage:
             ...
         else:
             raise ConnectionError()
-        for chunk in response.iter_content(1000000):
+        for chunk in response.iter_content(1024):
             data += chunk
             rf.show(len(data))
         file_manage.save(data,save_file_path)
