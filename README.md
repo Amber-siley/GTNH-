@@ -33,11 +33,11 @@
 |                   [skinport](https://www.mcmod.cn/class/2700.html)                   |      支持纤细模型       |
 |                   [WorldEdit](https://www.mcmod.cn/class/609.html)                   |         创世神          |
 |                [WorldEditCUIFe](https://www.mcmod.cn/class/612.html)                 |   创世神UI forge版本    |
-|                  [dualhotbar](https://www.mcmod.cn/class/6392.html)                  |       双倍快捷栏        |
 |             [Extra Player Render](https://www.mcmod.cn/class/3123.html)              |      额外玩家渲染       |
 | [GTNH-Faithful-Textures](https://github.com/Ethryan/GTNH-Faithful-Textures/releases) |   GTNH Faithful材质包   |
 |                                      以下已弃用                                      |                         |
 |      [translate—GTNH](https://github.com/Kiwi233/Translation-of-GTNH/releases)       |        汉化文件         |
+|                  [dualhotbar](https://www.mcmod.cn/class/6392.html)                  |       双倍快捷栏        |
 |           [NEI-Utilities](https://github.com/RealSilverMoon/NEI-Utilities)           |       NEI实用工具       |
 
 - 删除的文件：
@@ -67,6 +67,9 @@
 |   optionsof.txt   | 游戏视频设置文件 |
 | journeymap->data  | 旅行地图数据文件 |
 | visualprospecting |  矿脉，油田文件  |
+
+> 以下内容还未更新
+
 
 #### 例子
 ##### 1，安装游戏
