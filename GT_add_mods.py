@@ -11,7 +11,7 @@ import requests
 #DEFINE
 proxy:int = None #代理端口
 #删除的mod
-rm_mods={
+rm_mods = {
     'CraftPresence.jar':("discord相关",r"CraftPresence.*\.jar"),
     'defaultserverlist.jar':("默认添加的多人服务器",r"defaultserverlist.*\.jar"),
     'HardcoreDarkness-MC.jar':("更真实的黑暗",r"HardcoreDarkness-MC.*\.jar")
@@ -19,10 +19,13 @@ rm_mods={
 '''Use:
 >>> {"方便记忆的模组文件名":("一句话介绍或者为None",“模组名称的正则表达式”)}'''
 
+server_rm_mods = {
+    'HardcoreDarkness-MC.jar':("更真实的黑暗",r"HardcoreDarkness-MC.*\.jar")
+}
 #添加的mod
-add_mods={
+add_mods = {
     'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
-    'Twist Space Technolgy Mod':("扭曲空间科技","http://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-2.6.1fitted-test-alpha/TwistSpaceTechnology-0.4.30-2.6.1fitted-test-alpha.jar"),
+    'Twist Space Technolgy Mod':("扭曲空间科技","http://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
     'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
     'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
     'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
@@ -30,22 +33,40 @@ add_mods={
     'Extra Player Render':("额外玩家渲染","https://mediafilez.forgecdn.net/files/4287/440/extraplayerrenderer-1.7.10-1.0.1.jar"),
     #2.6版本自带相同功能，已弃用
     # 'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
-    'Not Enough Characters':("NEI 拼音搜索","https://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
+    'Not Enough Characters':("NEI 拼音搜索","http://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
     "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
     "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
     'CustomSkinloader':("万用皮肤补丁14.6a",("https://modfile.mcmod.cn/action/download/?key=a1ca79539773703d72f73596f7af6e05","CustomSkinLoader_1.7.10-14.6a.jar")),
     'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
     'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar"),
     'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar"),
-    'dualhotbar':("双倍快捷栏","https://mediafilez.forgecdn.net/files/2212/352/dualhotbar-1.7.10-1.6.jar")
+    # 与苹果皮有点UI重合，已弃用
+    # 'dualhotbar':("双倍快捷栏","https://mediafilez.forgecdn.net/files/2212/352/dualhotbar-1.7.10-1.6.jar")
+}
+
+#服务器添加mod
+server_add_mods = {
+    'Twist Space Technolgy Mod':("扭曲空间科技","https://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
+    'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
+    'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
+    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
+    'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar")
 }
 
 #config目录下需修改的配置文件
-set_configs={
+set_configs = {
     "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
     "angelica-modules.cfg":[("安洁莉卡配置文件 防止平滑字体重影","enableFontRenderer","false")],
     ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",1440),\
                                     ("存档配置文件 保持备份数量","keep",5),\
+                                    ("存档配置文件 打开存档时备份","onStartup","false"),\
+                                    ("存档配置文件 压缩率","compressionRate",9)]
+}
+
+#服务器config目录下修改的配置文件
+server_set_configs = {
+    ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",360),\
+                                    ("存档配置文件 保持备份数量","keep",7),\
                                     ("存档配置文件 打开存档时备份","onStartup","false"),\
                                     ("存档配置文件 压缩率","compressionRate",9)]
 }
@@ -124,7 +145,11 @@ header={
     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
 }
 
+client_url = "http://downloads.gtnewhorizons.com/ClientPacks/?raw"
+server_url = "http://downloads.gtnewhorizons.com/ServerPacks/?raw"
+
 mods_path=join_path(getcwd(),"mods")
+eula_path = join_path(getcwd(),"eula.txt")
 config_path=join_path(getcwd(),"config")
 
 class entry:
@@ -330,8 +355,8 @@ class url_manage:
         if response.ok:
             ...
         else:
-            raise ConnectionError()
-        for chunk in response.iter_content(1024):
+            raise ConnectionError(d_url)
+        for chunk in response.iter_content(1024*1024):
             data += chunk
             rf.show(len(data))
         file_manage.save(data,save_file_path)
@@ -385,25 +410,26 @@ def conf_join_path(main_path,args:str | tuple):
 #2.6版本官方自带汉化，已弃用
 # def set_chinese_file():
 
-def dowload_GTNH():
-    urls = requests.get(url="http://downloads.gtnewhorizons.com/ClientPacks/?raw",headers=header).text.split()
+def dowload_GTNH(url:str):
+    urls = requests.get(url=url,headers=header).text.split()
     versions = [i.split("/")[-1] for i in urls]
-    num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"{index+1},{ver}" for index,ver in enumerate(versions)])+"\n"))
+    num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"- {index+1}，{ver}" for index,ver in enumerate(versions)])+"\n"))
     file_path = url_manage.dowload(d_url=urls[num-1],file_name=versions[num-1])
     fm = file_manage()
     fm.unzip(file_path=file_path,retain=False)
 
-def dowload_mods():
-    for name,infor in add_mods.items():
+def dowload_mods(target:dict):
+    '''- target 添加mod描述字典'''
+    for name,infor in target.items():
         url,file_name=infor[-1],None
         if isinstance(url,tuple):
             url=url[0]
             file_name=url[-1]
         url_manage.dowload(url,mods_path,file_name)
     
-def rm_file():
+def rm_file(target:dict):
     '''删除不需要的文件或者模组'''
-    for name,infor in rm_mods.items():
+    for name,infor in target.items():
         rf_p=progress_bar(1,"删除mod")
         rule=infor[-1]
         fm=file_manage(mods_path)
@@ -412,8 +438,9 @@ def rm_file():
                 fm.rm(i)
         rf_p.show(1,f"删除mod【{name}】")
         
-def set_config():
-    for name,config in set_configs.items():
+def set_config(target:dict):
+    '''- target 设置描述字典'''
+    for name,config in target.items():
         config_file=conf_join_path(config_path,name)
         try:
             cg=Config(config_file).config
@@ -449,35 +476,59 @@ def action_other_file():
         elif conf["action_type"] == 'nr_move':
             fm.nr_mv(old_file_path,conf["save_location"])
         of_p.show(1)
-        
-def main():
-    type=int(input(\
-        '''
-        本脚本不会进行操作存档文件，可以设置，但建议手动转移
-        请选择模式，
-        1，安装GTNH
-        2，（请在运行并结束GTNH生成配置文件后再运行）设置私货，配置文件，下载材质包
-        请输入编号：'''
-        ))
-    if type not in range(1,6):
-        raise ValueError("输入参数错误")
-    if type == 1:
-        dowload_GTNH()
-    elif type == 2:
-        rm_file()
-        dowload_mods()
-        # set_chinese_file()
-        set_config()
-        action_other_file()
-    elif type == 3:
-        '''设置配置文件'''
-        set_config()
-    elif type == 4:
-        ''''其他文件的修改'''
-        action_other_file()
-    elif type == 5:
-        '''汉化文件下载'''
-        # set_chinese_file()
 
+def set_eula():
+    '''设置为同意eula协议'''
+    eu_p = progress_bar(1,"同意eula协议")
+    with open(eula_path,"w") as fp:
+        fp.write("eula=true")
+    eu_p.show(1)
+
+def main():
+    mode = int(input('''选择模式：
+            - 1，客户端
+            - 2，服务端\n'''))
+    match mode:
+        case 1:
+            type=int(input('''本脚本不会进行操作存档文件，可以设置，但建议手动转移，\n请选择模式：
+            - 1，安装GTNH
+            - 2，（请在运行并结束GTNH生成配置文件后再运行）设置私货，配置文件，下载材质包\n'''))
+            match type:
+                case 1:
+                    dowload_GTNH(client_url)
+                case 2:
+                    rm_file(rm_mods)
+                    dowload_mods(add_mods)
+                    # set_chinese_file()
+                    set_config(set_configs)
+                    action_other_file()
+                case 3:
+                    '''设置配置文件'''
+                    set_config(set_configs)
+                case 4:
+                    ''''其他文件的修改'''
+                    action_other_file()
+                case 5:
+                    '''汉化文件下载'''
+                    # set_chinese_file()
+                case _:
+                    raise ValueError("参数错误")
+        case 2:
+            type = int(input('''请选择模式：
+            - 1，部署服务端
+            - 2，（请在运行并结束GTNH服务端后生成配置文件后再运行）设置配置文件\n'''))
+            match type:
+                case 1:
+                    dowload_GTNH(server_url)
+                    set_eula()
+                    rm_file(server_rm_mods)
+                    dowload_mods(server_add_mods)
+                case 2:
+                    set_config(server_set_configs)
+                case _:
+                    raise ValueError("参数错误")
+        case _:
+            raise ValueError("参数错误")
+                    
 if __name__ == "__main__":
     main()
