@@ -18,27 +18,28 @@
 更改的文件
 - 添加的文件:
 
-|                                         名称                                         |          注释           |
-| :----------------------------------------------------------------------------------: | :---------------------: |
-|                 [Smooth Font](https://www.mcmod.cn/class/1086.html)                  |        平滑字体         |
-|          [Twist Space Technolgy Mod](https://www.mcmod.cn/class/12969.html)          |      扭曲空间科技       |
-|                 [AromaBackup](https://www.mcmod.cn/class/1140.html)                  |        存档备份         |
-|                 [Aroma1997Core](https://www.mcmod.cn/class/919.html)                 |      存档备份前置       |
-|                    [inputfix](https://www.mcmod.cn/class/43.html)                    |      中文输入修复       |
-|                  [FpsReducer](https://www.mcmod.cn/class/1815.html)                  |        FPS减速器        |
-|            [Not Enough Characters](https://www.mcmod.cn/class/2198.html)             |      NEI 拼音搜索       |
-|                    [NoFog](https://www.mcmod.cn/class/1820.html)                     |       移除所有雾        |
-|                  [OmniOcular](https://www.mcmod.cn/class/1016.html)                  | 根据方块NBT信息显示内容 |
-|               [CustomSkinloader](https://www.mcmod.cn/class/883.html)                |    万用皮肤补丁14.6a    |
-|                   [skinport](https://www.mcmod.cn/class/2700.html)                   |      支持纤细模型       |
-|                   [WorldEdit](https://www.mcmod.cn/class/609.html)                   |         创世神          |
-|                [WorldEditCUIFe](https://www.mcmod.cn/class/612.html)                 |   创世神UI forge版本    |
-|             [Extra Player Render](https://www.mcmod.cn/class/3123.html)              |      额外玩家渲染       |
-| [GTNH-Faithful-Textures](https://github.com/Ethryan/GTNH-Faithful-Textures/releases) |   GTNH Faithful材质包   |
-|                                      以下已弃用                                      |                         |
-|      [translate—GTNH](https://github.com/Kiwi233/Translation-of-GTNH/releases)       |        汉化文件         |
-|                  [dualhotbar](https://www.mcmod.cn/class/6392.html)                  |       双倍快捷栏        |
-|           [NEI-Utilities](https://github.com/RealSilverMoon/NEI-Utilities)           |       NEI实用工具       |
+|                                                         名称                                                          |          注释           |
+| :-------------------------------------------------------------------------------------------------------------------: | :---------------------: |
+|                                  [Smooth Font](https://www.mcmod.cn/class/1086.html)                                  |        平滑字体         |
+|                          [Twist Space Technolgy Mod](https://www.mcmod.cn/class/12969.html)                           |      扭曲空间科技       |
+| [ZeroPointBugfix](https://github.com/wohaopa/ZeroPointServerBugfix/releases/download/0.6.3/ZeroPointBugfix-0.6.3.jar) |      零点错误修复       |
+|                                  [AromaBackup](https://www.mcmod.cn/class/1140.html)                                  |        存档备份         |
+|                                 [Aroma1997Core](https://www.mcmod.cn/class/919.html)                                  |      存档备份前置       |
+|                                  [FpsReducer](https://www.mcmod.cn/class/1815.html)                                   |        FPS减速器        |
+|                             [Not Enough Characters](https://www.mcmod.cn/class/2198.html)                             |      NEI 拼音搜索       |
+|                                     [NoFog](https://www.mcmod.cn/class/1820.html)                                     |       移除所有雾        |
+|                                  [OmniOcular](https://www.mcmod.cn/class/1016.html)                                   | 根据方块NBT信息显示内容 |
+|                                [CustomSkinloader](https://www.mcmod.cn/class/883.html)                                |    万用皮肤补丁14.6a    |
+|                                   [WorldEdit](https://www.mcmod.cn/class/609.html)                                    |         创世神          |
+|                                 [WorldEditCUIFe](https://www.mcmod.cn/class/612.html)                                 |   创世神UI forge版本    |
+|                              [Extra Player Render](https://www.mcmod.cn/class/3123.html)                              |      额外玩家渲染       |
+|                 [GTNH-Faithful-Textures](https://github.com/Ethryan/GTNH-Faithful-Textures/releases)                  |   GTNH Faithful材质包   |
+|                                                      以下已弃用                                                       |                         |
+|                       [translate—GTNH](https://github.com/Kiwi233/Translation-of-GTNH/releases)                       |        汉化文件         |
+|                                    [inputfix](https://www.mcmod.cn/class/43.html)                                     |      中文输入修复       |
+|                                   [skinport](https://www.mcmod.cn/class/2700.html)                                    |      支持纤细模型       |
+|                                  [dualhotbar](https://www.mcmod.cn/class/6392.html)                                   |       双倍快捷栏        |
+|                           [NEI-Utilities](https://github.com/RealSilverMoon/NEI-Utilities)                            |       NEI实用工具       |
 
 - 删除的文件：
 
@@ -68,7 +69,7 @@
 | journeymap->data  | 旅行地图数据文件 |
 | visualprospecting |  矿脉，油田文件  |
 
-> 以下内容还未更新
+> ## 以下内容还未更新
 
 
 #### 例子
@@ -97,3 +98,12 @@ python GT_add_mods.py
 GTNH start
 #### 自定义文件处理
 目前为了使用方便，没有添加配置文件来管理，配置项都在代码里，详见[代码注释](./GT_add_mods.py)
+
+## TODO
+- [x] 服务端支持
+- [ ] 多版本支持
+- [ ] 配置文件section支持
+- [ ] 存档数据整理
+- [ ] 用户自定义配置
+- [ ] multiMC支持
+- [ ] 使用游戏版本对mod进行分类
