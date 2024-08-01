@@ -102,7 +102,7 @@ GTNH start
 ## TODO
 - [x] 服务端支持
 - [ ] 多版本支持
-- [ ] 配置文件section支持
+- [x] 配置文件section支持
 - [ ] 存档数据整理
 - [ ] 用户自定义配置
 - [ ] multiMC支持

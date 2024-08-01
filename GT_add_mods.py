@@ -1,9 +1,11 @@
 from os.path import isfile,splitext,isdir,basename,dirname,exists
 from os.path import join as join_path
 from os.path import split as split_path
-from os import unlink,getcwd,rename,walk
+from os import unlink,getcwd,rename,walk,system
 from zipfile import ZipFile
 from tkinter.filedialog import askdirectory
+from abc import abstractmethod
+from copy import deepcopy
 import re
 import shutil
 import requests
@@ -26,18 +28,23 @@ server_rm_mods = {
 add_mods = {
     'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
     'Twist Space Technolgy Mod':("扭曲空间科技","http://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
-    'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
-    'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
-    'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
+    'ZeroPointBugfix':("零点错误修复","https://github.com/wohaopa/ZeroPointServerBugfix/releases/download/0.6.3/ZeroPointBugfix-0.6.3.jar"),
+    # 2.6版本ServerUtilities已自带相关功能，已弃用
+    # 'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
+    # 'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
+    
+    # 2.6版本零点错误修复已内置该功能，已弃用
+    # 'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
     'FpsReducer':("FPS减速器","https://mediafilez.forgecdn.net/files/2627/303/FpsReducer-mc1.7.10-1.10.3.jar"),
     'Extra Player Render':("额外玩家渲染","https://mediafilez.forgecdn.net/files/4287/440/extraplayerrenderer-1.7.10-1.0.1.jar"),
-    #2.6版本自带相同功能，已弃用
+    # 2.6版本自带相同功能，已弃用
     # 'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
     'Not Enough Characters':("NEI 拼音搜索","http://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
     "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
     "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
     'CustomSkinloader':("万用皮肤补丁14.6a",("https://modfile.mcmod.cn/action/download/?key=a1ca79539773703d72f73596f7af6e05","CustomSkinLoader_1.7.10-14.6a.jar")),
-    'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
+    # 与皮肤补丁似乎功能重复了，已弃用
+    # 'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
     'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar"),
     'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar"),
     # 与苹果皮有点UI重合，已弃用
@@ -47,9 +54,12 @@ add_mods = {
 #服务器添加mod
 server_add_mods = {
     'Twist Space Technolgy Mod':("扭曲空间科技","https://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
-    'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
-    'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
-    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
+    # 2.6版本ServerUtilities已自带相关功能，已弃用
+    # 'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
+    # 'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
+    
+    # oo配置文件服务器也需装
+    "OmniOcular":("根据方块NBT信息显示内容","https://github.com/wohaopa/OmniOcular-Unofficial/releases/download/1.5.1/OmniOcularUnofficial-1.5.1.jar"),
     'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar")
 }
 
@@ -57,10 +67,11 @@ server_add_mods = {
 set_configs = {
     "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
     "angelica-modules.cfg":[("安洁莉卡配置文件 防止平滑字体重影","enableFontRenderer","false")],
-    ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",1440),\
-                                    ("存档配置文件 保持备份数量","keep",5),\
-                                    ("存档配置文件 打开存档时备份","onStartup","false"),\
-                                    ("存档配置文件 压缩率","compressionRate",9)]
+    
+    # ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",360),\
+    #                                 ("存档配置文件 保持备份数量","keep",5),\
+    #                                 ("存档配置文件 打开存档时备份","onStartup","false"),\
+    #                                 ("存档配置文件 压缩率","compressionRate",9)]
 }
 
 #服务器config目录下修改的配置文件
@@ -139,6 +150,11 @@ other_file={
             'action_type':'move',
             'save_location':'resourcepacks'
         },
+    'OO':
+        {
+            'type':"online",
+            "url":"",
+        }
 }
 
 header={
@@ -154,101 +170,136 @@ config_path=join_path(getcwd(),"config")
 
 class entry:
     '''设置项的描述'''
-    def __init__(self,conf,value,index:int,old:str,format:str='{conf} = {value}') -> None:
-        self.conf=conf
-        self.value=value
-        self.index=index
-        self.old=old
-        self.format=format
+    def __init__(self,conf,value,index:int,chain:str,prefix:str,other:str) -> None:
+        self.conf = conf
+        self.value = value
+        self.index = index
+        self.chain = chain
+        self.prefix = prefix
+        self.other = other
+        self.format = "{prefix}{conf}{chain}{value}{other}"
     
     def __str__(self) -> str:
-        return self.format.format(conf=self.conf,value=self.value)
-    
+        return self.format.format(conf = self.conf, chain = self.chain, value = self.value, prefix = self.prefix, other = self.other)
+
 class ini_config:
-    '''ini文件实现，感觉不需要section'''
+    '''ini文件实现\n
+    继承后必须实现的方法：ini_config_rule'''
     def __init__(self,path) -> None:
-        self.path=path
-        self._index=0
-        self.configs_index={}
-        self.configs=self._configs()
-        self.len=len(self.configs)
+        self.path = path
+        self._configs:dict[str,dict[str,entry]] = {}
+        self._index_to_location:dict[int,dict[str,str]] = {}
+        self.ini_configs()
+        self._change_index = set()
     
+    def configs(self) -> dict[str,dict[str,str]]:
+        configs = deepcopy(self._configs)
+        for sec in configs.keys():
+            for opt in configs[sec].keys():
+                configs[sec][opt] = configs[sec][opt].value
+        
+        return configs
+        
+    @abstractmethod
     def init_config_rule(self):
-        self.config_rule='(\w{0,})\s{0,1}=\s{0,1}(\w{0,})'
-        self.format_rule_conf="()\w*(\s?=)"
-        self.format_rule_value="(=\s?)\w*()"
-        
-    def __iter__(self):
-        return self
-    
-    def __next__(self) ->entry:
-        if self._index < self.len:
-            return_data=self.configs[self._index]
-            self._index+=1
-            return return_data
-        else:
-            self._index=0
-            raise StopIteration
-        
-    def __getitem__(self,key) ->entry:
-        return self.configs[self.configs_index[key]]
-    
-    @property
-    def options(self) ->list[str]:
-        '''返回设置项名称'''
-        return [i.conf for i in self.configs]
-    
-    def _configs(self) ->list[entry]:
+        """
+        必须初始化三个属性参数\n
+        attr【_section_rule， _option_rule，_fistword_jumpstrs】
+        - _section_rule: 匹配section的正则表达式，匹配组名【section】
+        - _option_rule: 匹配option的正则表达式，匹配组名【option，chain，value，prefix，other】
+        - _fistword_jumpstrs: list[] 每行的第一个字符在其中则跳过"""
+        self._section_rule = r"\[(?P<section>.*[^\s])\]"
+        self._option_rule = r"(?P<prefix>)(?P<option>.*[^\s])(?P<chain>\s*=\s*)(?P<value>.*[^\s])(?P<other>\s*)"
+        self._fistword_jumpstrs = ["\n",";"]
+
+    def ini_configs(self):
+        """初始化，获取文件配置内容"""
         self.init_config_rule()
-        return_data:list[entry]=[]
-        with open(self.path,'r') as fp:
-            #return [entry(**self._read_line_config(value,index)) for index,value in enumerate(fp.readlines()) if self._read_line_config(value,index)]    
-            for index,value in enumerate(fp.readlines()):
-                if config_data:=self._read_line_config(value,index):
-                    return_data.append(entry(**config_data))
-                    self.configs_index[return_data[len(return_data)-1].conf]=len(return_data)-1
-            return return_data
         
-    def _read_line_config(self,line:str,index:int) ->dict | None:
-        if line[0]==";" or line=='\n':
-            return None
-        config=re.findall(self.config_rule,line)
-        if not config:
-            return None
-        format=re.sub(self.format_rule_conf,r"\1{conf}\2",re.sub(self.format_rule_value,r"\1{value}\2",line))
-        return_data={
-            "conf":config[0][0],
-            "value":config[0][1],
-            "index":index,
-            "old":line,
-            "format":format
-        }
-        return return_data
+        section_name = "default"
+        with open(self.path,'r') as fp:
+            for index,line in enumerate(fp.readlines()):
+                if line[0] in self._fistword_jumpstrs:
+                    continue
+                
+                if tmp_section_name := re.search(self._section_rule,line):
+                    section_name = tmp_section_name.group("section")
+                    self._configs[section_name] = {}
+                
+                if tmp_option := re.search(self._option_rule,line):
+                    option = tmp_option.group("option")
+                    value = tmp_option.group("value")
+                    chain = tmp_option.group("chain")
+                    prefix = tmp_option.group("prefix")
+                    other = tmp_option.group("other")
+                    
+                    self._index_to_location[index] = [section_name,option]
+                    self._configs[section_name][option] = entry(option,value,index,chain,prefix,other)
+
+                    
+    def sections(self) -> list[str]:
+        '''返回配置组名'''
+        return self._configs.keys()
     
-    def set_config(self,attr:str,value):
-        '''设置配置项 简单粗暴的设置方法（指正：替换方法）'''
+    def set_config(self,sec:str = "default",opt:str=None,val=None):
+        '''设置配置项
+        - sec: section
+        - opt: option
+        - val: value
+        '''
+        self._configs[sec][opt].value = str(val).lower()
+        self._change_index.update([self._configs[sec][opt].index])
+        
+    def save(self):
+        """保存文件，简单粗暴的设置方法（指正：替换方法）"""
         with open(self.path,"r") as fp:
-            lines=fp.readlines()
-        with open(self.path,"w") as fp:
+            lines = fp.readlines()
+        
+        with open(self.path,"w") as wp:
             try:
-                item=self.__getitem__(attr)
-                item.value=value
-                lines[item.index]=str(item)
+                for i in list(self._change_index):
+                    sec,opt = self.get_location(i)
+                    lines[i] = str(self.get_entry(sec,opt))
             finally:
                 for i in lines:
-                    fp.write(i)
-    
-    def get_config(self,key):
-        return self.__getitem__(key).value 
+                    wp.write(i)
+                    
+                    
+    def get_config(self,sec:str,opt:str) -> str:
+        """- sec: section
+        - opt: option_
+        """
+        return self._configs[sec][opt].value
 
+    def get_entry(self,sec:str,opt:str) -> entry:
+        """- sec: section
+        - opt: option_"""
+        return self._configs[sec][opt]
+        
+    def get_section(self,sec:str) -> dict[str,entry]:
+        return self._configs[sec]
+    
+    def get_location(self,index:int) -> list[str]:
+        """通过索引获取section 和 option的名称"""
+        return self._index_to_location[index]
+        
 class cfg_config(ini_config):
     def __init__(self, path) -> None:
         super().__init__(path)
         
     def init_config_rule(self):
-        self.config_rule='''\w\s?:"?\s?([\w\s]+)"?\s?=\s?(\w*)'''
-        self.format_rule_conf='''(\s+\w\s?:"?)[\w\s]+()'''
-        self.format_rule_value='''("?\s?=\s?)\w*()'''
+        self._section_rule = r"(?P<section>.*[^\s])\s*\{"
+        self._option_rule = r"(?P<prefix>\s*\w:)(?P<option>.*[^\s])(?P<chain>\s*=\s*)(?P<value>.*[^\s])(?P<other>\s*)"
+        self._fistword_jumpstrs = ["\n","#"]
+
+class txt_config(ini_config):
+    def __init__(self, path) -> None:
+        super().__init__(path)
+    
+    def init_config_rule(self):
+        self._section_rule = r"\[(?P<section>.*[^\s])\]"
+        self._option_rule = r"(?P<prefix>)(?P<option>.*[^\s])(?P<chain>\s*:\s*)(?P<value>.*[^\s])(?P<other>\s*)"
+        self._fistword_jumpstrs = ["\n","/"]
     
 class Config:
     '''ini或者cfg的配置文件读取与修改'''
@@ -258,13 +309,18 @@ class Config:
             self.file_type=file_manage(file_path=self.path).file_type
         else:
             raise ValueError("文件路径错误")
-            
+    
     @property
-    def config(self) ->ini_config | cfg_config:
-        if self.file_type=="ini":
-            return ini_config(self.path)
-        elif self.file_type=="cfg":
-            return cfg_config(self.path)
+    def Config(self):
+        match self.file_type:
+            case "ini":
+                return ini_config(self.path)
+            case "cfg":
+                return cfg_config(self.path)
+            case "txt":
+                return txt_config(self.path)
+            case _:
+                raise ValueError("文件不支持")
 
 class file_manage:
     def __init__(self,work_path=None,file_path:str=None) -> None:
@@ -533,3 +589,4 @@ def main():
                     
 if __name__ == "__main__":
     main()
+    system("pause")
