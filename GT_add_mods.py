@@ -1,11 +1,12 @@
-from os.path import isfile,splitext,isdir,basename,dirname,exists
-from os.path import join as join_path
+from os.path import isfile,splitext,isdir,basename,dirname,exists,join
 from os.path import split as split_path
 from os import unlink,getcwd,rename,walk,system
 from zipfile import ZipFile
 from tkinter.filedialog import askdirectory
 from abc import abstractmethod
 from copy import deepcopy
+from typing import Literal,Any
+
 import re
 import shutil
 import requests
@@ -164,9 +165,123 @@ header={
 client_url = "http://downloads.gtnewhorizons.com/ClientPacks/?raw"
 server_url = "http://downloads.gtnewhorizons.com/ServerPacks/?raw"
 
-mods_path=join_path(getcwd(),"mods")
-eula_path = join_path(getcwd(),"eula.txt")
-config_path=join_path(getcwd(),"config")
+mods_path = join(getcwd(),"mods")
+eula_path = join(getcwd(),"eula.txt")
+config_path = join(getcwd(),"config")
+
+class FileType:
+    '''处理文件描述'''
+    LOCAL = "local"
+    ONLINE = "online"
+    
+    NR_MV = "nr_mv"
+    MV = "mv"
+    CP = "cp"
+    RM = "rm"
+    
+    ATTR_ENABLED = "enabled"
+    ATTR_DESC = "description"
+    
+    ATTR_FP = "file_path"
+    ATTR_WP = "work_path"
+    
+    ATTR_RE_NAME = "regular_name"
+    ATTR_FN = "file_name"
+    
+    ATTR_SP = "save_path"
+    ATTR_TYPE = "type"
+    ATTR_URL = "url"
+    ATTR_UZIP = "unzip"
+    ATTR_REZIP = "retain_zip"
+    ATTR_ACTION = "action_type"
+    ATTR_SCRIPT = "script"
+    ATTR_VERSION_DEMAND = "version"
+    ATTR_CONFIG_DEMAND = "config"
+    
+    def __init__(self, **kwargs:dict[str,dict[str,Any]]) -> None:
+        self.enabled:bool = False
+        self.file_path:str = None
+        self.file_name:str = None
+        self.save_path:tuple = None
+        self.type:str = None
+        self.description:str = None
+        self.work_path:str = None
+        self.regular_name:str = None
+        self.url:str = None
+        self.unzip:bool = False
+        self.retain_zip:bool = True
+        self.action_type:Literal["mv","nr_mv","cp","rm"] = None
+        self.script:list = None
+        for key,value in kwargs.items():
+            self.__setattr__(key,value)
+        if self.work_path == None and self.regular_name
+    
+    def join_path(self,main_path,args:str | tuple):
+        if isinstance(args,tuple):
+            return join(main_path,*args)
+        else:
+            return join(main_path,args)
+
+    def action_local(self):
+        if not self.enabled:
+            return
+        
+        match self.action_type:
+            #rm file
+            case FileType.RM:
+                pb = progress_bar(title=f"删除 {self.file_path} {self.description}")
+                work = FileManage(work_path=self.work_path)
+                files = work.ls()
+                for path in files:
+                    if re.findall(self.regular_name,FileManage(path).file_name):
+                        work.rm(path)
+                        break
+                pb.finish()
+            
+            #mv file
+            case FileType.MV:
+                pb = progress_bar(title=f"移动 {self.file_path} -> {self.save_path}")
+                
+        
+    def action_online(self):
+        ...
+        
+    def action(self):
+        match self.type:
+            case FileType.LOCAL:
+                self.action_local()
+            case FileType.ONLINE:
+                self.action_online()
+            case _:
+                ValueError("配置文件类型错误")
+        
+DEFAULT_CONFIG = [
+    #删除的文件
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.LOCAL,
+        FileType.ATTR_DESC:"discord相关",
+        FileType.ATTR_WP:"mods",
+        FileType.ATTR_RE_NAME:r"CraftPresence.*\.jar",
+        FileType.ATTR_ACTION:FileType.RM
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.LOCAL,
+        FileType.ATTR_DESC:"默认添加的多人服务器",
+        FileType.ATTR_WP:"mods",
+        FileType.ATTR_RE_NAME:r"defaultserverlist.*\.jar",
+        FileType.ATTR_ACTION:FileType.RM
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.LOCAL,
+        FileType.ATTR_DESC:"更真实的黑暗",
+        FileType.ATTR_WP:"mods",
+        FileType.ATTR_RE_NAME:r"HardcoreDarkness-MC.*\.jar",
+        FileType.ATTR_ACTION:FileType.RM
+    }
+]
 
 class entry:
     '''设置项的描述'''
@@ -306,7 +421,7 @@ class Config:
     def __init__(self,path:str) -> None:
         if isfile(path):
             self.path=path
-            self.file_type=file_manage(file_path=self.path).file_type
+            self.file_type=FileManage(file_path=self.path).file_type
         else:
             raise ValueError("文件路径错误")
     
@@ -322,7 +437,7 @@ class Config:
             case _:
                 raise ValueError("文件不支持")
 
-class file_manage:
+class FileManage:
     def __init__(self,work_path=None,file_path:str=None) -> None:
         if not work_path:
             self.work_path=getcwd()
@@ -335,19 +450,21 @@ class file_manage:
             self.file_name=basename(file_path)
             self.file_type=file_infor[-1][1:]
     
-    def nr_mv(self,old_path,new_path):
+    @staticmethod
+    def nr_mv(old_path,new_path):
         '''not root move'''
         if not exists(new_path):
             shutil.move(old_path,new_path)
         else:
-            self.cp(old_path,new_path)
-            self.rm(old_path)
+            FileManage.cp(old_path,new_path)
+            FileManage.rm(old_path)
     
-    def mv(self,old_path,new_path):
+    @staticmethod
+    def mv(old_path,new_path):
         if isdir(old_path):
             dir=split_path(old_path)[-1]
-            new_path=join_path(new_path,dir)
-        self.nr_mv(old_path,new_path)
+            new_path=join(new_path,dir)
+        FileManage.nr_mv(old_path,new_path)
         
     @staticmethod
     def cp(main_path,aim_path):
@@ -368,7 +485,7 @@ class file_manage:
         if not save_path:
             save_path=self.work_path
         file.extractall(save_path)
-        unzip_file_path=join_path(self.work_path,file.namelist()[0][:-1])
+        unzip_file_path=join(self.work_path,file.namelist()[0][:-1])
         if not retain:
             del file
             self.rm(file_path)
@@ -384,7 +501,7 @@ class file_manage:
         rename(src,dst)
     
     def ls(self) ->list[str]:
-        return [join_path(dirpath,file) for dirpath,dirnames,filenames in walk(self.work_path) for file in filenames]
+        return [join(dirpath,file) for dirpath,dirnames,filenames in walk(self.work_path) for file in filenames]
     
 class url_manage:
     def __init__(self) -> None:
@@ -399,7 +516,7 @@ class url_manage:
             save_path=getcwd()
         if not file_name:
             file_name=d_url.split("/")[-1]
-        save_file_path=join_path(save_path,file_name)
+        save_file_path=join(save_path,file_name)
         # file=requests.get(d_url,headers=header).content
         if not proxy:
             response = requests.get(d_url,headers=header,stream=True)
@@ -415,12 +532,12 @@ class url_manage:
         for chunk in response.iter_content(1024*1024):
             data += chunk
             rf.show(len(data))
-        file_manage.save(data,save_file_path)
+        FileManage.save(data,save_file_path)
         return save_file_path
 
 
 class progress_bar:
-    def __init__(self,max:int,title:str=None,progress_item:str="■") -> None:
+    def __init__(self,max:int = 1,title:str=None,progress_item:str="■") -> None:
         if max == 0:
             max = 1
         self._max=max
@@ -443,25 +560,28 @@ class progress_bar:
         return f"""{byte} {unit}"""  
     
     def show(self,value,title=None):
-        if title:
-           self.title=title 
+        if not title:
+           title = self.title 
         proportion=int(value/self._max*20)
         if self.mode == "normal":
             if proportion == 20:
-                print(f" {self.title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
+                print(f" {title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
             else:
-                print(f" {self.title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
+                print(f" {title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
         elif self.mode == "dowload":
             if proportion == 20:
-                print(f" {self.title} :"+"\t【{:<20}】titol {} complete".format(self._progress_item*proportion,self.store(value)))
+                print(f" {title} :"+"\t【{:<20}】titol {} complete".format(self._progress_item*proportion,self.store(value)))
             else:
-                print(f" {self.title} :"+"\t【{:<20}】titol {}".format(self._progress_item*proportion,self.store(value)),end="\r")
+                print(f" {title} :"+"\t【{:<20}】titol {}".format(self._progress_item*proportion,self.store(value)),end="\r")
 
+    def finish(self):
+        self.show(self._max)
+    
 def conf_join_path(main_path,args:str | tuple):
     if isinstance(args,tuple):
-        return join_path(main_path,*args)
+        return join(main_path,*args)
     else:
-        return join_path(main_path,args)
+        return join(main_path,args)
 
 #2.6版本官方自带汉化，已弃用
 # def set_chinese_file():
@@ -471,7 +591,7 @@ def dowload_GTNH(url:str):
     versions = [i.split("/")[-1] for i in urls]
     num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"- {index+1}，{ver}" for index,ver in enumerate(versions)])+"\n"))
     file_path = url_manage.dowload(d_url=urls[num-1],file_name=versions[num-1])
-    fm = file_manage()
+    fm = FileManage()
     fm.unzip(file_path=file_path,retain=False)
 
 def dowload_mods(target:dict):
@@ -488,7 +608,7 @@ def rm_file(target:dict):
     for name,infor in target.items():
         rf_p=progress_bar(1,"删除mod")
         rule=infor[-1]
-        fm=file_manage(mods_path)
+        fm=FileManage(mods_path)
         for i in fm.ls():
             if re.findall(rule,i):
                 fm.rm(i)
@@ -512,7 +632,7 @@ def action_other_file():
     old_path=askdirectory(title="请选择需要转移的文件的游戏根目录")
     if not old_path:
         return 0
-    fm=file_manage()
+    fm=FileManage()
     for file,conf in other_file.items():
         of_p=progress_bar(1,f"{conf['description']}")
         if conf["type"] == 'local':
