@@ -121,7 +121,7 @@ class FileType:
                 if not OLD_VERSION_PATH:
                     print("请选择需要转移的文件的游戏根目录")
                     OLD_VERSION_PATH = realpath(askdirectory(title="请选择需要转移的文件的游戏根目录"))
-                    if OLD_VERSION_PATH:
+                    if not OLD_VERSION_PATH:
                         NEED_MOVE_FILE = False
                         return
                         
