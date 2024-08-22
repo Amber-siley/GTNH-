@@ -1,162 +1,21 @@
-from os.path import isfile,splitext,isdir,basename,dirname,exists,join
+from os.path import isfile,splitext,isdir,basename,dirname,exists,join,normpath,relpath,realpath,samefile
 from os.path import split as split_path
-from os import unlink,getcwd,rename,walk,system
+from os import unlink,getcwd,rename,walk,system,listdir,makedirs,get_terminal_size
 from zipfile import ZipFile
 from tkinter.filedialog import askdirectory
 from abc import abstractmethod
 from copy import deepcopy
 from typing import Literal,Any
+from wcwidth import wcswidth
 
 import re
 import shutil
 import requests
 
+from config import DEFAULT_CONFIG
+
 #DEFINE
 proxy:int = None #代理端口
-#删除的mod
-rm_mods = {
-    'CraftPresence.jar':("discord相关",r"CraftPresence.*\.jar"),
-    'defaultserverlist.jar':("默认添加的多人服务器",r"defaultserverlist.*\.jar"),
-    'HardcoreDarkness-MC.jar':("更真实的黑暗",r"HardcoreDarkness-MC.*\.jar")
-}
-'''Use:
->>> {"方便记忆的模组文件名":("一句话介绍或者为None",“模组名称的正则表达式”)}'''
-
-server_rm_mods = {
-    'HardcoreDarkness-MC.jar':("更真实的黑暗",r"HardcoreDarkness-MC.*\.jar")
-}
-#添加的mod
-add_mods = {
-    'Smooth Font':("平滑字体","https://mediafilez.forgecdn.net/files/2614/474/SmoothFont-1.7.10-1.15.3.jar"),
-    'Twist Space Technolgy Mod':("扭曲空间科技","http://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
-    'ZeroPointBugfix':("零点错误修复","https://github.com/wohaopa/ZeroPointServerBugfix/releases/download/0.6.3/ZeroPointBugfix-0.6.3.jar"),
-    # 2.6版本ServerUtilities已自带相关功能，已弃用
-    # 'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
-    # 'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
-    
-    # 2.6版本零点错误修复已内置该功能，已弃用
-    # 'inputfix':("中文输入修复","https://mediafilez.forgecdn.net/files/4408/526/InputFix-1.7.10-v6.jar"),
-    'FpsReducer':("FPS减速器","https://mediafilez.forgecdn.net/files/2627/303/FpsReducer-mc1.7.10-1.10.3.jar"),
-    'Extra Player Render':("额外玩家渲染","https://mediafilez.forgecdn.net/files/4287/440/extraplayerrenderer-1.7.10-1.0.1.jar"),
-    # 2.6版本自带相同功能，已弃用
-    # 'NEI-Utilities':("NEI实用工具","https://github.com/RealSilverMoon/NEI-Utilities/releases/download/0.1.9/neiutilities-0.1.9.jar"),
-    'Not Enough Characters':("NEI 拼音搜索","http://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar"),
-    "NoFog":("移除所有雾","https://mediafilez.forgecdn.net/files/2574/985/NoFog-1.7.10b1-1.0.jar"),
-    "OmniOcular":("根据方块NBT信息显示内容","https://mediafilez.forgecdn.net/files/2388/572/OmniOcular-1.7.10-1.0build103.jar"),
-    'CustomSkinloader':("万用皮肤补丁14.6a",("https://modfile.mcmod.cn/action/download/?key=a1ca79539773703d72f73596f7af6e05","CustomSkinLoader_1.7.10-14.6a.jar")),
-    # 与皮肤补丁似乎功能重复了，已弃用
-    # 'skinport':("支持纤细模型","https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar"),
-    'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar"),
-    'WorldEditCUIFe':("创世神UI forge版本","https://mediafilez.forgecdn.net/files/2390/420/WorldEditCuiFe-v1.0.7-mf-1.7.10-10.13.4.1566.jar"),
-    # 与苹果皮有点UI重合，已弃用
-    # 'dualhotbar':("双倍快捷栏","https://mediafilez.forgecdn.net/files/2212/352/dualhotbar-1.7.10-1.6.jar")
-}
-
-#服务器添加mod
-server_add_mods = {
-    'Twist Space Technolgy Mod':("扭曲空间科技","https://github.com/Nxer/Twist-Space-Technology-Mod/releases/download/0.4.30-GTNH2.6.1/TwistSpaceTechnology-0.4.30-GTNH2.6.1.jar"),
-    # 2.6版本ServerUtilities已自带相关功能，已弃用
-    # 'AromaBackup':("存档备份","https://mediafilez.forgecdn.net/files/2284/754/AromaBackup-1.7.10-0.1.0.0.jar"),
-    # 'Aroma1997Core':("存档备份 前置","https://mediafilez.forgecdn.net/files/2257/644/Aroma1997Core-1.7.10-1.0.2.16.jar"),
-    
-    # oo配置文件服务器也需装
-    "OmniOcular":("根据方块NBT信息显示内容","https://github.com/wohaopa/OmniOcular-Unofficial/releases/download/1.5.1/OmniOcularUnofficial-1.5.1.jar"),
-    'WorldEdit':("创世神","https://mediafilez.forgecdn.net/files/2309/699/worldedit-forge-mc1.7.10-6.1.1-dist.jar")
-}
-
-#config目录下需修改的配置文件
-set_configs = {
-    "fastcraft.ini":[("fastcraft配置文件 要与平滑字体兼容需修改配置","enableFontRendererTweaks","false")],
-    "angelica-modules.cfg":[("安洁莉卡配置文件 防止平滑字体重影","enableFontRenderer","false")],
-    
-    # ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",360),\
-    #                                 ("存档配置文件 保持备份数量","keep",5),\
-    #                                 ("存档配置文件 打开存档时备份","onStartup","false"),\
-    #                                 ("存档配置文件 压缩率","compressionRate",9)]
-}
-
-#服务器config目录下修改的配置文件
-server_set_configs = {
-    ("aroma1997","AromaBackup.cfg"):[("存档配置文件 备份间隔","delay",360),\
-                                    ("存档配置文件 保持备份数量","keep",7),\
-                                    ("存档配置文件 打开存档时备份","onStartup","false"),\
-                                    ("存档配置文件 压缩率","compressionRate",9)]
-}
-
-#其他 文件或者文件夹
-other_file={
-    'options.txt':
-        {
-            'type':"local",             #文件类型，本地文件local or 网络文件online
-            'url':None,                 #下载网址，当为online文件时有意义，None无意义
-            'file_name':None,           #通过网络下载文件url中无文件名时需定义
-            'description':"游戏按键设置文件",#介绍
-            'need_unzip':False,         #是否需要解压操作
-            'retain_zip':True,          #是否保留zip文件
-            'action_type':'copy',       #执行的类型，复制copy，完整移动move，不包含主目录移动nr_move
-            'save_location':None        #复制的保存路径，None表示脚本当前工作目录
-        },
-    'optionsof.txt':
-        {
-            'type':'local',
-            'url':None,
-            'file_name':None,
-            'description':"游戏视频设置文件",
-            'need_unzip':False,
-            'retain_zip':True,
-            'action_type':'copy',
-            'save_location':None
-        },
-    ('journeymap','data'):
-        {
-            'type':'local',
-            'url':None,
-            'file_name':None,
-            'description':"旅行地图数据文件",
-            'need_unzip':False,
-            'retain_zip':True,
-            'action_type':'copy',
-            'save_location':('journeymap','data')
-        },
-    ('journeymap','config'):
-        {
-            'type':'local',
-            'url':None,
-            'file_name':None,
-            'description':"旅行地图配置文件",
-            'need_unzip':False,
-            'retain_zip':True,
-            'action_type':'copy',
-            'save_location':('journeymap','config')
-        },
-    "visualprospecting":
-        {
-            'type':'local',
-            'url':None,
-            'file_name':None,
-            'description':"矿脉，油田文件",
-            'need_unzip':False,
-            'retain_zip':True,
-            'action_type':'copy',
-            'save_location':"visualprospecting"
-        },
-    'GTNH-Faithful-Textures.0.9.6.zip':
-        {
-            'type':'online',
-            'url':"http://github.com/Ethryan/GTNH-Faithful-Textures/releases/download/0.9.6/GTNH-Faithful-Textures.0.9.6.zip",
-            'file_name':None,
-            'description':"GTNH Faithful材质包 ",
-            'need_unzip':False,
-            'retain_zip':False,
-            'action_type':'move',
-            'save_location':'resourcepacks'
-        },
-    'OO':
-        {
-            'type':"online",
-            "url":"",
-        }
-}
 
 header={
     "User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0"
@@ -167,7 +26,9 @@ server_url = "http://downloads.gtnewhorizons.com/ServerPacks/?raw"
 
 mods_path = join(getcwd(),"mods")
 eula_path = join(getcwd(),"eula.txt")
-config_path = join(getcwd(),"config")
+
+OLD_VERSION_PATH = None
+NEED_MOVE_FILE = True
 
 class FileType:
     '''处理文件描述'''
@@ -178,110 +39,160 @@ class FileType:
     MV = "mv"
     CP = "cp"
     RM = "rm"
+    UNZIP = "unzip"
     
     ATTR_ENABLED = "enabled"
     ATTR_DESC = "description"
-    
-    ATTR_FP = "file_path"
-    ATTR_WP = "work_path"
-    
-    ATTR_RE_NAME = "regular_name"
+
+    ATTR_FP = "file_path"    
     ATTR_FN = "file_name"
     
+    ATTR_WP = "work_path"
     ATTR_SP = "save_path"
     ATTR_TYPE = "type"
     ATTR_URL = "url"
-    ATTR_UZIP = "unzip"
     ATTR_REZIP = "retain_zip"
     ATTR_ACTION = "action_type"
     ATTR_SCRIPT = "script"
-    ATTR_VERSION_DEMAND = "version"
-    ATTR_CONFIG_DEMAND = "config"
+    ATTR_VERSION_DEMAND = "version_demand"
+    ATTR_CONFIG_OPTION = "config_option"
+    ATTR_DEFAULT_CONFIG = "default_config"
+    ATTR_SERVER_DETAIL = "server_detail"
     
-    def __init__(self, **kwargs:dict[str,dict[str,Any]]) -> None:
+    def __init__(self, kwargs:dict[str,Any]) -> None:
         self.enabled:bool = False
         self.file_path:str = None
         self.file_name:str = None
         self.save_path:tuple = None
+        self.work_path:tuple = None
         self.type:str = None
         self.description:str = None
-        self.work_path:str = None
-        self.regular_name:str = None
         self.url:str = None
-        self.unzip:bool = False
         self.retain_zip:bool = True
-        self.action_type:Literal["mv","nr_mv","cp","rm"] = None
+        self.action_type:Literal["mv","nr_mv","cp","rm","unzip"] = None
         self.script:list = None
+        self.version_demand:str | list = None
+        self.config_option:list = []
+        self.default_config:str = None
+        self.server_detail:bool = False
         for key,value in kwargs.items():
             self.__setattr__(key,value)
-        if self.work_path == None and self.regular_name
+        self.init_path("file_path")
+        self.init_path("work_path")
+        self.init_path("save_path")
+        if self.file_path == None:
+            self.file_path = self.join_path(self.save_path,self.file_name)
+        
+    def init_path(self,attr:str):
+        """将路径参数初始化"""
+        raw_path = self.__getattribute__(attr)
+        if isinstance(raw_path,str):
+            self.__setattr__(attr,normpath(raw_path))
+        elif isinstance(raw_path,tuple):
+            self.__setattr__(attr,normpath(join(*raw_path)))
     
     def join_path(self,main_path,args:str | tuple):
         if isinstance(args,tuple):
             return join(main_path,*args)
-        else:
+        elif isinstance(args,str):
             return join(main_path,args)
 
-    def action_local(self):
-        if not self.enabled:
-            return
-        
+    def _action_local(self):
         match self.action_type:
             #rm file
             case FileType.RM:
-                pb = progress_bar(title=f"删除 {self.file_path} {self.description}")
-                work = FileManage(work_path=self.work_path)
-                files = work.ls()
-                for path in files:
-                    if re.findall(self.regular_name,FileManage(path).file_name):
-                        work.rm(path)
-                        break
+                pb = progress_bar(title = f"删除 {self.file_path} {self.description}")
+                if self.save_path:
+                    work = FileManage(work_path = self.save_path)
+                    files = work.ls()
+                    for path in files:
+                        if re.findall(self.file_name,FileManage(file_path = path).file_name):
+                            work.rm(path)
+                            break
+                else:
+                    FileManage.rm(self.file_path)
                 pb.finish()
             
-            #mv file
-            case FileType.MV:
-                pb = progress_bar(title=f"移动 {self.file_path} -> {self.save_path}")
-                
+            #cp file
+            case FileType.CP:
+                global OLD_VERSION_PATH,NEED_MOVE_FILE
+                if not NEED_MOVE_FILE:
+                    return
+                if not OLD_VERSION_PATH:
+                    print("请选择需要转移的文件的游戏根目录")
+                    OLD_VERSION_PATH = realpath(askdirectory(title="请选择需要转移的文件的游戏根目录"))
+                    if samefile(OLD_VERSION_PATH,getcwd()) or OLD_VERSION_PATH:
+                        NEED_MOVE_FILE = False
+                        return
+                        
+                old_filepath = join(OLD_VERSION_PATH,self.file_path)
+                if exists(old_filepath):
+                    pb = progress_bar(title=f"移动 {self.file_path} -> {self.save_path}")
+                    FileManage.cp(old_filepath,self.save_path)
+                    pb.finish()
+            
+            #unzip
+            case FileType.UNZIP:
+                FileManage(self.save_path).unzip(self.file_path,retain = self.retain_zip)
+            
+        #edit file
+        for sec,opt,value in self.config_option:
+            if self.check_version():
+                pd = progress_bar(title=f"设置 {opt} => {value} {self.description}")
+                FileManage.touch(self.file_path,self.default_config)
+                Config(self.file_path).Config.set_config(sec,opt,value)
+                pd.finish()
         
-    def action_online(self):
-        ...
+        self._action_script()
+        
+    def _action_online(self):
+        if self.check_version() and self.url:
+            file_path = url_manage.dowload(self.url,self.save_path,self.file_name)
+            if self.action_type == FileType.UNZIP:
+                FileManage(self.save_path).unzip(file_path,retain = self.retain_zip)
+        self._action_script()
+    
+    def _action_script(self):
+        if self.script:
+            for script in self.script:
+                script = FileType(script)
+                script.action()
+           
+    def check_version(self) ->bool:
+        '''版本要求'''
+        demand = self.version_demand            
+        if demand == None:
+            return True
+        now_version = GTNH.version()
+        if isinstance(demand,list):
+            if now_version in demand:
+                return True
+        elif isinstance(demand,str):
+            chain:str = demand[0]
+            version = demand[1:]
+            match chain:
+                case ">":
+                    if now_version >= version:  return True
+                case "<":
+                    if now_version <= version:  return True
+                case "=":
+                    if now_version == version:  return True
+                case _ as x:
+                    if x.lower() == "all":
+                        return True
+                    raise ValueError(f"配置错误 {demand}")
+        return False
         
     def action(self):
+        if not self.enabled and self.check_version():
+            return
         match self.type:
             case FileType.LOCAL:
-                self.action_local()
+                self._action_local()
             case FileType.ONLINE:
-                self.action_online()
+                self._action_online()
             case _:
                 ValueError("配置文件类型错误")
-        
-DEFAULT_CONFIG = [
-    #删除的文件
-    {
-        FileType.ATTR_ENABLED:True,
-        FileType.ATTR_TYPE:FileType.LOCAL,
-        FileType.ATTR_DESC:"discord相关",
-        FileType.ATTR_WP:"mods",
-        FileType.ATTR_RE_NAME:r"CraftPresence.*\.jar",
-        FileType.ATTR_ACTION:FileType.RM
-    },
-    {
-        FileType.ATTR_ENABLED:True,
-        FileType.ATTR_TYPE:FileType.LOCAL,
-        FileType.ATTR_DESC:"默认添加的多人服务器",
-        FileType.ATTR_WP:"mods",
-        FileType.ATTR_RE_NAME:r"defaultserverlist.*\.jar",
-        FileType.ATTR_ACTION:FileType.RM
-    },
-    {
-        FileType.ATTR_ENABLED:True,
-        FileType.ATTR_TYPE:FileType.LOCAL,
-        FileType.ATTR_DESC:"更真实的黑暗",
-        FileType.ATTR_WP:"mods",
-        FileType.ATTR_RE_NAME:r"HardcoreDarkness-MC.*\.jar",
-        FileType.ATTR_ACTION:FileType.RM
-    }
-]
 
 class entry:
     '''设置项的描述'''
@@ -304,7 +215,7 @@ class ini_config:
         self.path = path
         self._configs:dict[str,dict[str,entry]] = {}
         self._index_to_location:dict[int,dict[str,str]] = {}
-        self.ini_configs()
+        self.init_configs()
         self._change_index = set()
     
     def configs(self) -> dict[str,dict[str,str]]:
@@ -327,7 +238,7 @@ class ini_config:
         self._option_rule = r"(?P<prefix>)(?P<option>.*[^\s])(?P<chain>\s*=\s*)(?P<value>.*[^\s])(?P<other>\s*)"
         self._fistword_jumpstrs = ["\n",";"]
 
-    def ini_configs(self):
+    def init_configs(self):
         """初始化，获取文件配置内容"""
         self.init_config_rule()
         
@@ -378,7 +289,6 @@ class ini_config:
             finally:
                 for i in lines:
                     wp.write(i)
-                    
                     
     def get_config(self,sec:str,opt:str) -> str:
         """- sec: section
@@ -443,6 +353,8 @@ class FileManage:
             self.work_path=getcwd()
         else:
             self.work_path=work_path
+            if not exists(work_path):
+                makedirs(work_path,exist_ok=True)
         if file_path:
             file_infor=splitext(file_path)
             self.file_path=file_path
@@ -480,12 +392,30 @@ class FileManage:
         if isfile(path):
             unlink(path)
     
+    @staticmethod
+    def touch(file_path:str,content = None):
+        wp = FileManage(file_path=file_path).save_path
+        if not exists(wp):
+            makedirs(wp,exist_ok=True)
+        if not exists(file_path):
+            with open(file_path,"w") as fp:
+                fp.write(content)
+
     def unzip(self,file_path,save_path=None,retain:bool=True) ->str:
         file=ZipFile(file_path)
         if not save_path:
-            save_path=self.work_path
-        file.extractall(save_path)
-        unzip_file_path=join(self.work_path,file.namelist()[0][:-1])
+            save_path=relpath(self.work_path,getcwd())
+        # file.extractall(save_path)
+        file_list = file.namelist()
+        pd = progress_bar(max=len(file_list),title=f"解压 {relpath(file_path,getcwd())} => {save_path}")
+        for index,unzipfile in enumerate(file_list):
+            # file_info = file.getinfo(unzipfile)
+            # file_info.filename = file_info.filename.encode("cp437").decode()
+            # file.extract(file_info,save_path)
+            file.extract(unzipfile,save_path)
+            pd.show(index+1)
+            
+        unzip_file_path=join(self.work_path,file_list[0][:-1])
         if not retain:
             del file
             self.rm(file_path)
@@ -500,30 +430,33 @@ class FileManage:
     def rename(src,dst):
         rename(src,dst)
     
-    def ls(self) ->list[str]:
+    def tree(self) ->list[str]:
         return [join(dirpath,file) for dirpath,dirnames,filenames in walk(self.work_path) for file in filenames]
     
+    def ls(self) ->list[str]:
+        return [join(self.work_path,path) for path in listdir(self.work_path)]
+        
 class url_manage:
     def __init__(self) -> None:
         pass
     
     @staticmethod
     def dowload(d_url:str,save_path=None,file_name=None) ->str:
-        '''默认保存在当前工作目录'''
+        '''默认保存在当前工作目录 返回file_path'''
         if proxy:
             proxies = {"http":f"http://127.0.0.1:{proxy}"}
         if not save_path:
             save_path=getcwd()
         if not file_name:
             file_name=d_url.split("/")[-1]
-        save_file_path=join(save_path,file_name)
-        # file=requests.get(d_url,headers=header).content
         if not proxy:
             response = requests.get(d_url,headers=header,stream=True)
         else:
             response = requests.get(d_url,headers=header,stream=True,proxies=proxies)
+        
+        save_file_path=join(save_path,file_name)
         content_max = int(response.headers['content-length'])
-        rf = progress_bar(content_max,f"下载文件 {file_name}")
+        rf = progress_bar(content_max,f"下载 {file_name}")
         data = bytes()
         if response.ok:
             ...
@@ -532,7 +465,7 @@ class url_manage:
         for chunk in response.iter_content(1024*1024):
             data += chunk
             rf.show(len(data))
-        FileManage.save(data,save_file_path)
+        FileManage(save_path).save(data,save_file_path)
         return save_file_path
 
 
@@ -547,6 +480,8 @@ class progress_bar:
             self.mode = "normal"
         self.title=title
         self._progress_item=progress_item
+        self.max_len = get_terminal_size().columns - 1
+        self.title_max_len = 54
         self.show(0)
     
     def store(self,byte:int) -> str:
@@ -557,108 +492,74 @@ class progress_bar:
         if byte>1024:
             byte>>=10
             unit="MB"
-        return f"""{byte} {unit}"""  
+        return f"""{byte} {unit}"""
     
     def show(self,value,title=None):
         if not title:
            title = self.title 
         proportion=int(value/self._max*20)
+        space_len = self.title_max_len - wcswidth(title)
+        if space_len < 0:   space_len = 0
+        space_str = " "*space_len
         if self.mode == "normal":
             if proportion == 20:
-                print(f" {title} :","\t【{:<20}】 complete".format(self._progress_item*proportion))
+                line = f"{title} :{space_str}"+"\t【{:<20}】 ✅".format(self._progress_item*proportion)
+                print(line)
             else:
-                print(f" {title} :","\t【{:<20}】".format(self._progress_item*proportion),end="\r")
+                line = f"{title} :{space_str}"+"\t【{:<20}】   ".format(self._progress_item*proportion)
+                print(" "*self.max_len+"\r"+line,end="\r")
         elif self.mode == "dowload":
             if proportion == 20:
-                print(f" {title} :"+"\t【{:<20}】titol {} complete".format(self._progress_item*proportion,self.store(value)))
+                line = f"{title} :{space_str}"+"\t【{:<20}】 ✅ titol {}".format(self._progress_item*proportion,self.store(value))
+                print(line)
             else:
-                print(f" {title} :"+"\t【{:<20}】titol {}".format(self._progress_item*proportion,self.store(value)),end="\r")
+                line = f"{title} :{space_str}"+"\t【{:<20}】    titol {}".format(self._progress_item*proportion,self.store(value))
+                print(" "*self.max_len+"\r"+line,end="\r")
 
     def finish(self):
         self.show(self._max)
+
+class GTNH:
+    @staticmethod
+    def dowload_GTNH(url:str):
+        urls = requests.get(url=url,headers=header).text.split()
+        versions = [i.split("/")[-1] for i in urls]
+        num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"- {index+1}，{ver}" for index,ver in enumerate(versions)])+"\n"))
+        file_path = url_manage.dowload(d_url=urls[num-1],file_name=versions[num-1])
+        fm = FileManage()
+        fm.unzip(file_path=file_path,retain=False)
+
+    @staticmethod
+    def set_eula():
+        '''设置为同意eula协议'''
+        eu_p = progress_bar(1,"同意eula协议")
+        with open(eula_path,"w") as fp:
+            fp.write("eula=true")
+        eu_p.show(1)
+
+    @staticmethod
+    def set_file(mode:Literal["client","server"]):
+        """使用配置设置文件"""
+        configs = {'默认配置':DEFAULT_CONFIG}
+        type = int(input("请选择配置：\n\t"+"\n\t".join([f"- {i+1}，{k}" for i,k in enumerate(configs.keys())])+"\n"))
+        match mode:
+            case "client":
+                for config in configs[list(configs.keys())[type-1]]:
+                    FileType(config).action()
+            case "server":
+                for config in configs[list(configs.keys())[type-1]]:
+                    ft = FileType(config)
+                    if ft.server_detail:
+                        ft.action()
+
+    @staticmethod
+    def version():
+        for path in FileManage().ls():
+            if matcher := re.search(r"changelog from .* to (?P<version>.*)\.md",path):
+                return matcher.group("version")
     
-def conf_join_path(main_path,args:str | tuple):
-    if isinstance(args,tuple):
-        return join(main_path,*args)
-    else:
-        return join(main_path,args)
-
-#2.6版本官方自带汉化，已弃用
-# def set_chinese_file():
-
-def dowload_GTNH(url:str):
-    urls = requests.get(url=url,headers=header).text.split()
-    versions = [i.split("/")[-1] for i in urls]
-    num = int(input("请选择安装版本：\n\t"+"\n\t".join([f"- {index+1}，{ver}" for index,ver in enumerate(versions)])+"\n"))
-    file_path = url_manage.dowload(d_url=urls[num-1],file_name=versions[num-1])
-    fm = FileManage()
-    fm.unzip(file_path=file_path,retain=False)
-
-def dowload_mods(target:dict):
-    '''- target 添加mod描述字典'''
-    for name,infor in target.items():
-        url,file_name=infor[-1],None
-        if isinstance(url,tuple):
-            url=url[0]
-            file_name=url[-1]
-        url_manage.dowload(url,mods_path,file_name)
-    
-def rm_file(target:dict):
-    '''删除不需要的文件或者模组'''
-    for name,infor in target.items():
-        rf_p=progress_bar(1,"删除mod")
-        rule=infor[-1]
-        fm=FileManage(mods_path)
-        for i in fm.ls():
-            if re.findall(rule,i):
-                fm.rm(i)
-        rf_p.show(1,f"删除mod【{name}】")
-        
-def set_config(target:dict):
-    '''- target 设置描述字典'''
-    for name,config in target.items():
-        config_file=conf_join_path(config_path,name)
-        try:
-            cg=Config(config_file).config
-        except ValueError:
-            continue
-        for option in config:
-            cg.set_config(option[-2],option[-1])
-            fg_p=progress_bar(1,"配置文件")
-            fg_p.show(1,f"配置文件 {name}.{option[-2]} ")
-
-def action_other_file():
-    print("请选择需要转移的文件的游戏根目录")
-    old_path=askdirectory(title="请选择需要转移的文件的游戏根目录")
-    if not old_path:
-        return 0
-    fm=FileManage()
-    for file,conf in other_file.items():
-        of_p=progress_bar(1,f"{conf['description']}")
-        if conf["type"] == 'local':
-            old_file_path=conf_join_path(old_path,file)
-        elif conf["type"] == 'online':
-            old_file_path=url_manage.dowload(conf["url"],file_name=conf["file_name"])
-        if conf["need_unzip"]:
-            old_file_path=fm.unzip(old_file_path,retain=conf["retain_zip"])
-        if not conf['save_location']:
-            conf["save_location"]=fm.work_path
-        else:
-            conf["save_location"]=conf_join_path(fm.work_path,conf["save_location"])
-        if conf['action_type'] == 'copy':
-            fm.cp(old_file_path,conf["save_location"])
-        elif conf['action_type'] == 'move':
-            fm.mv(old_file_path,conf["save_location"])
-        elif conf["action_type"] == 'nr_move':
-            fm.nr_mv(old_file_path,conf["save_location"])
-        of_p.show(1)
-
-def set_eula():
-    '''设置为同意eula协议'''
-    eu_p = progress_bar(1,"同意eula协议")
-    with open(eula_path,"w") as fp:
-        fp.write("eula=true")
-    eu_p.show(1)
+def quit_script(x):
+    ...
 
 def main():
     mode = int(input('''选择模式：
@@ -668,45 +569,37 @@ def main():
         case 1:
             type=int(input('''本脚本不会进行操作存档文件，可以设置，但建议手动转移，\n请选择模式：
             - 1，安装GTNH
-            - 2，设置私货，下载材质包
-            - 3，（请在运行并结束GTNH生成配置文件后再运行）设置配置文件\n'''))
+            - 2，使用配置设置私货，设置配置文件
+            - 3，1+2 安装+配置\n'''))
             match type:
                 case 1:
-                    dowload_GTNH(client_url)
+                    GTNH.dowload_GTNH(client_url)
                 case 2:
-                    rm_file(rm_mods)
-                    dowload_mods(add_mods)
-                    # set_chinese_file()
-                    set_config(set_configs)
-                    action_other_file()
+                    GTNH.set_file("client")
                 case 3:
-                    '''设置配置文件'''
-                    set_config(set_configs)
-                case 4:
-                    ''''其他文件的修改'''
-                    action_other_file()
-                case 5:
-                    '''汉化文件下载'''
-                    # set_chinese_file()
-                case _:
-                    raise ValueError("参数错误")
+                    GTNH.dowload_GTNH(client_url)
+                    GTNH.set_file("client")
+                case _ as x:
+                    quit_script(x)
         case 2:
             type = int(input('''请选择模式：
             - 1，部署服务端
-            - 2，（请在运行并结束GTNH服务端后生成配置文件后再运行）设置配置文件\n'''))
+            - 2，使用配置设置私货，设置配置文件
+            - 3，1+2 部署+配置\n'''))
             match type:
                 case 1:
-                    dowload_GTNH(server_url)
-                    set_eula()
-                    rm_file(server_rm_mods)
-                    dowload_mods(server_add_mods)
+                    GTNH.dowload_GTNH(server_url)
                 case 2:
-                    set_config(server_set_configs)
-                case _:
-                    raise ValueError("参数错误")
-        case _:
-            raise ValueError("参数错误")
-                    
+                    GTNH.set_file("server")
+                case 3:
+                    GTNH.dowload_GTNH(server_url)
+                    GTNH.set_file("server")
+                case _ as x:
+                    quit_script(x)
+            GTNH.set_eula()
+        case _ as x:
+            quit_script(x)
+
 if __name__ == "__main__":
     main()
     system("pause")
