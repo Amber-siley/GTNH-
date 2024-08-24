@@ -102,6 +102,7 @@ GTNH start
 ## 相关库
 - Requests
 - wcwidth
+- py7zr
 
 ## TODO
 - [x] 服务端支持
