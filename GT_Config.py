@@ -375,19 +375,7 @@ DEFAULT_CONFIG = [
         FileType.ATTR_TYPE:FileType.LOCAL,
         FileType.ATTR_DESC:"aromabackup备份配置",
         FileType.ATTR_FP:"config\\aroma1997\\AromaBackup.cfg",
-        FileType.ATTR_VERSION_DEMAND:"<2.5.1",
-        FileType.ATTR_CONFIG_OPTION:[("general","delay",360),\
-                                    ("general","keep",7),\
-                                    ("general","onStartup","false"),\
-                                    ("general","compressionRate",9)],
-        FileType.ATTR_DEFAULT_CONFIG:"""# Configuration file\n\ngeneral {\n    # If all players or only admins can use the /backup command.\n    B:allPlayers=true\n\n    # If the blacklist is enabled, the dimensions (ids) specified here will not be backed up.\n    I:blacklist <\n     >\n\n    # Compression rate. Has to be between 9 (high compression) and 1 (low compression).\n    I:compressionRate=9\n\n    # How frequently a automatic backup is done in minutes. 0 means Auto-Backup disabled.\n    I:delay=360\n\n    # How many backups are kept. 0 means infinite\n    I:keep=5\n\n    # Where to store the Backups. Either an absolute path or relative to the minecraft folder.\n    S:location=./backups\n\n    # If a backup should be done when the world gets loaded.\n    B:onStartup=true\n\n    # If the scheduled backup should be skipped if no players were on the server since the last one.\n    B:skipbackup=true\n\n    # If this is set to true, it will use the Dimension Whitelist, if it is false, it will use the Dimension Blacklist\n    B:useWhitelist=false\n\n    # If the whitelist is enabled, only the dimensions (ids) specified here will be backed up.\n    I:whitelist <\n        0\n        1\n        -1\n     >\n}\n\n\n"""
-    },
-    {
-        FileType.ATTR_ENABLED:True,
-        FileType.ATTR_TYPE:FileType.LOCAL,
-        FileType.ATTR_DESC:"aromabackup备份配置",
-        FileType.ATTR_FP:"config\\aroma1997\\AromaBackup.cfg",
-        FileType.ATTR_VERSION_DEMAND:">2.6.0",
+        FileType.ATTR_SERVER_DETAIL:True,
         FileType.ATTR_CONFIG_OPTION:[("general","delay",360),\
                                     ("general","keep",7),\
                                     ("general","onStartup","false"),\
