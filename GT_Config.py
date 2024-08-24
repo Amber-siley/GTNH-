@@ -306,6 +306,46 @@ DEFAULT_CONFIG = [
         FileType.ATTR_URL:"http://github.com/Ethryan/GTNH-Faithful-Textures/releases/download/0.9.6/GTNH-Faithful-Textures.0.9.6.zip",
         FileType.ATTR_SP:"resourcepacks"
     },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.5.1/2.5.1.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.5.1"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.5.0/2.5.0.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.5.0"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.4.1.V2/2.4.1.V2.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.4.1"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.4.0/2.4.0.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.4.0"
+    },
     #移动文件
     {
         FileType.ATTR_ENABLED:True,
@@ -420,4 +460,47 @@ DEFAULT_CONFIG = [
                                         ("vip","serverutilities.chunkloader.max_chunks",500)],
         FileType.ATTR_DEFAULT_CONFIG:"""// For more info visit https://github.com/GTNewHorizons/ServerUtilities\n\n[player]\ndefault_player_rank: true\npower: 1\nserverutilities.claims.max_chunks: 300\nserverutilities.chunkloader.max_chunks: 300\nserverutilities.homes.max: 100\nserverutilities.homes.warmup: 5s\nserverutilities.homes.cooldown: 5s\nserverutilities.homes.cross_dim: true\n\n[vip]\npower: 20\nserverutilities.chat.name_format: <&bVIP {name}&r>\nserverutilities.claims.max_chunks: 500\nserverutilities.chunkloader.max_chunks: 500\nserverutilities.homes.max: 100\nserverutilities.homes.warmup: 0s\nserverutilities.homes.cooldown: 1s\nserverutilities.homes.cross_dim: true\n\n[admin]\ndefault_op_rank: true\npower: 100\nserverutilities.chat.name_format: <&2{name}&r>\nserverutilities.claims.max_chunks: 1000\nserverutilities.chunkloader.max_chunks: 1000\nserverutilities.claims.bypass_limits: true\nserverutilities.homes.max: 100\nserverutilities.homes.warmup: 0s\nserverutilities.homes.cooldown: 0s\nserverutilities.homes.cross_dim: true"""
     }
+]
+
+DEFAULT_CHINESE_CONFIG = [
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.5.1/2.5.1.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.5.1"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.5.0/2.5.0.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.5.0"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.4.1.V2/2.4.1.V2.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.4.1"
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"汉化文件",
+        FileType.ATTR_URL:"https://github.com/Kiwi233/Translation-of-GTNH/releases/download/2.4.0/2.4.0.7z",
+        FileType.ATTR_SP:".",
+        FileType.ATTR_ACTION:FileType.UNZIP,
+        FileType.ATTR_REZIP:False,
+        FileType.ATTR_VERSION_DEMAND:"=2.4.0"
+    },
 ]
