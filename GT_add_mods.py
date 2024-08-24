@@ -12,7 +12,7 @@ import re
 import shutil
 import requests
 
-from config import DEFAULT_CONFIG
+from GT_Config import DEFAULT_CONFIG
 
 #DEFINE
 proxy:int = None #代理端口
@@ -409,10 +409,10 @@ class FileManage:
         file_list = file.namelist()
         pd = progress_bar(max=len(file_list),title=f"解压 {relpath(file_path,getcwd())} => {save_path}")
         for index,unzipfile in enumerate(file_list):
-            # file_info = file.getinfo(unzipfile)
-            # file_info.filename = file_info.filename.encode("cp437").decode()
-            # file.extract(file_info,save_path)
-            file.extract(unzipfile,save_path)
+            file_info = file.getinfo(unzipfile)
+            file_info.filename = self.redecode(file_info.filename)
+            file.extract(file_info,save_path)
+            # file.extract(unzipfile,save_path)
             pd.show(index+1)
             
         unzip_file_path=join(self.work_path,file_list[0][:-1])
@@ -420,6 +420,14 @@ class FileManage:
             del file
             self.rm(file_path)
         return unzip_file_path
+    
+    @staticmethod
+    def redecode(raw:str) -> str:
+        """重新编码，防止中文乱码"""
+        try:
+            return raw.encode('cp437').decode('gbk')
+        except:
+            return raw.encode('utf-8').decode('utf-8')
     
     @staticmethod
     def save(content:bytes,save_file_path:str=None):
