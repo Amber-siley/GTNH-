@@ -1,4 +1,4 @@
-from os.path import isfile,splitext,isdir,basename,dirname,exists,join,normpath,relpath,realpath,samefile
+from os.path import isfile,splitext,isdir,basename,dirname,exists,join,normpath,relpath,realpath
 from os.path import split as split_path
 from os import unlink,getcwd,rename,walk,system,listdir,makedirs,get_terminal_size
 from zipfile import ZipFile
@@ -7,12 +7,13 @@ from abc import abstractmethod
 from copy import deepcopy
 from typing import Literal,Any
 from wcwidth import wcswidth
+from py7zr import SevenZipFile
 
 import re
 import shutil
 import requests
 
-from GT_Config import DEFAULT_CONFIG
+from GT_Config import DEFAULT_CONFIG,DEFAULT_CHINESE_CONFIG
 
 #DEFINE
 proxy:int = None #代理端口
@@ -402,17 +403,25 @@ class FileManage:
                 fp.write(content)
 
     def unzip(self,file_path,save_path=None,retain:bool=True) ->str:
+        args = (file_path,save_path,retain)
+        match FileManage(file_path = file_path).file_type:
+            case "zip":
+                return self.__unzip(*args)
+            case "7z":
+                return self.__un7zip(*args)
+            case _ as x:
+                raise ValueError(f"文件类型 {x} 错误")
+    
+    def __unzip(self,file_path:str,save_path:str = None,retain:bool = True):
         file=ZipFile(file_path)
         if not save_path:
             save_path=relpath(self.work_path,getcwd())
-        # file.extractall(save_path)
         file_list = file.namelist()
         pd = progress_bar(max=len(file_list),title=f"解压 {relpath(file_path,getcwd())} => {save_path}")
         for index,unzipfile in enumerate(file_list):
             file_info = file.getinfo(unzipfile)
             file_info.filename = self.redecode(file_info.filename)
             file.extract(file_info,save_path)
-            # file.extract(unzipfile,save_path)
             pd.show(index+1)
             
         unzip_file_path=join(self.work_path,file_list[0][:-1])
@@ -421,6 +430,22 @@ class FileManage:
             self.rm(file_path)
         return unzip_file_path
     
+    def __un7zip(self,file_path:str,save_path:str = None,retain:bool = True):
+        file = SevenZipFile(file_path)
+        if not save_path:
+            save_path=relpath(self.work_path,getcwd())
+        file_list = file.getnames()
+        pd = progress_bar(max=len(file_list),title=f"解压 {relpath(file_path,getcwd())} => {save_path}")
+        file.extractall(save_path)
+        pd.finish()
+    
+        unzip_file_path=join(self.work_path,file_list[0][:-1])
+        if not retain:
+            del file
+            self.rm(file_path)
+        return unzip_file_path
+        
+        
     @staticmethod
     def redecode(raw:str) -> str:
         """重新编码，防止中文乱码"""
@@ -548,7 +573,8 @@ class GTNH:
     @staticmethod
     def set_file(mode:Literal["client","server"]):
         """使用配置设置文件"""
-        configs = {'默认配置':DEFAULT_CONFIG}
+        configs = {'默认配置[模组，配置，材质，数据，汉化]':DEFAULT_CONFIG,
+                   "默认配置[汉化]":DEFAULT_CHINESE_CONFIG}
         type = int(input("请选择配置：\n\t"+"\n\t".join([f"- {i+1}，{k}" for i,k in enumerate(configs.keys())])+"\n"))
         match mode:
             case "client":
