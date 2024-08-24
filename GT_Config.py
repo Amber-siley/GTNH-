@@ -284,8 +284,9 @@ DEFAULT_CONFIG = [
         FileType.ATTR_SERVER_DETAIL:True
     },
     {
-        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_ENABLED:False,
         FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_SERVER_DETAIL:True,
         FileType.ATTR_DESC:"TC4研究助手",
         FileType.ATTR_URL:"https://github.com/wohaopa/TC4Helper/releases/download/V2.2/tc4helper-V2.2.jar",
         FileType.ATTR_SP:"mods"
