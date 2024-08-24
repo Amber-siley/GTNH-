@@ -210,7 +210,7 @@ DEFAULT_CONFIG = [
         ]
     },
     {
-        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_ENABLED:False,
         FileType.ATTR_TYPE:FileType.ONLINE,
         FileType.ATTR_DESC:"万用皮肤补丁14.6a",
         FileType.ATTR_URL:"https://github.com/Amber-siley/GTNH_add_mod_script/releases/download/CSL/CustomSkinLoader_1.7.10-14.6a.jar",
@@ -240,7 +240,7 @@ DEFAULT_CONFIG = [
         FileType.ATTR_VERSION_DEMAND:"<2.5.1"
     },
     {
-        FileType.ATTR_ENABLED:False,
+        FileType.ATTR_ENABLED:True,
         FileType.ATTR_TYPE:FileType.ONLINE,
         FileType.ATTR_DESC:"支持纤细模型",
         FileType.ATTR_URL:"https://mediafilez.forgecdn.net/files/3212/17/SkinPort-1.7.10-v10d.jar",

@@ -589,14 +589,15 @@ def main():
             match type:
                 case 1:
                     GTNH.dowload_GTNH(server_url)
+                    GTNH.set_eula()
                 case 2:
                     GTNH.set_file("server")
                 case 3:
                     GTNH.dowload_GTNH(server_url)
                     GTNH.set_file("server")
+                    GTNH.set_eula()
                 case _ as x:
                     quit_script(x)
-            GTNH.set_eula()
         case _ as x:
             quit_script(x)
 
