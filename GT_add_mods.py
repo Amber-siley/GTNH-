@@ -591,20 +591,24 @@ class GTNH:
         for path in FileManage().ls():
             if matcher := re.search(r"changelog from .* to (?P<version>.*)\.md",path):
                 return matcher.group("version")
-    
+            else:
+                print("未找到version，是否已安装GTNH？")
+                system("pause")
+                quit()
+                    
 def quit_script(x):
     ...
 
 def main():
     mode = int(input('''选择模式：
-            - 1，客户端
-            - 2，服务端\n'''))
+        - 1，客户端
+        - 2，服务端\n'''))
     match mode:
         case 1:
             type=int(input('''本脚本不会进行操作存档文件，可以设置，但建议手动转移，\n请选择模式：
-            - 1，安装GTNH
-            - 2，使用配置设置私货，设置配置文件
-            - 3，1+2 安装+配置\n'''))
+        - 1，安装GTNH
+        - 2，使用配置设置私货，设置配置文件
+        - 3，1+2 安装+配置\n'''))
             match type:
                 case 1:
                     GTNH.dowload_GTNH(client_url)
@@ -617,9 +621,9 @@ def main():
                     quit_script(x)
         case 2:
             type = int(input('''请选择模式：
-            - 1，部署服务端
-            - 2，使用配置设置私货，设置配置文件
-            - 3，1+2 部署+配置\n'''))
+        - 1，部署服务端
+        - 2，使用配置设置私货，设置配置文件
+        - 3，1+2 部署+配置\n'''))
             match type:
                 case 1:
                     GTNH.dowload_GTNH(server_url)
