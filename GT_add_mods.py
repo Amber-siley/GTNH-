@@ -25,9 +25,6 @@ header={
 client_url = "http://downloads.gtnewhorizons.com/ClientPacks/?raw"
 server_url = "http://downloads.gtnewhorizons.com/ServerPacks/?raw"
 
-mods_path = join(getcwd(),"mods")
-eula_path = join(getcwd(),"eula.txt")
-
 OLD_VERSION_PATH = None
 NEED_MOVE_FILE = True
 
@@ -565,6 +562,7 @@ class GTNH:
     @staticmethod
     def set_eula():
         '''设置为同意eula协议'''
+        eula_path = join(getcwd(),"eula.txt")
         eu_p = progress_bar(1,"同意eula协议")
         with open(eula_path,"w") as fp:
             fp.write("eula=true")
