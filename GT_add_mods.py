@@ -8,6 +8,7 @@ from copy import deepcopy
 from typing import Literal,Any
 from wcwidth import wcswidth
 from py7zr import SevenZipFile
+from json import load,dumps
 
 import re
 import shutil
@@ -27,6 +28,7 @@ server_url = "http://downloads.gtnewhorizons.com/ServerPacks/?raw"
 
 OLD_VERSION_PATH = None
 NEED_MOVE_FILE = True
+NOW_VERSION = None
 
 class FileType:
     '''处理文件描述'''
@@ -102,7 +104,7 @@ class FileType:
                 pb = progress_bar(title = f"删除 {self.file_path} {self.description}")
                 if self.save_path:
                     work = FileManage(work_path = self.save_path)
-                    files = work.ls()
+                    files = work.lsdir()
                     for path in files:
                         if re.findall(self.file_name,FileManage(file_path = path).file_name):
                             work.rm(path)
@@ -138,7 +140,9 @@ class FileType:
             if self.check_version():
                 pd = progress_bar(title=f"设置 {opt} => {value} {self.description}")
                 FileManage.touch(self.file_path,self.default_config)
-                Config(self.file_path).Config.set_config(sec,opt,value)
+                fileconfig = Config(self.file_path).Config
+                fileconfig.set_config(sec,opt,value)
+                fileconfig.save()
                 pd.finish()
         
         self._action_script()
@@ -323,7 +327,31 @@ class txt_config(ini_config):
         self._section_rule = r"\[(?P<section>.*[^\s])\]"
         self._option_rule = r"(?P<prefix>)(?P<option>.*[^\s])(?P<chain>\s*:\s*)(?P<value>.*[^\s])(?P<other>\s*)"
         self._fistword_jumpstrs = ["\n","/"]
+
+class json_config:
+    def __init__(self, path) -> None:
+        self.path = path
+        self._configs:dict = load(open(self.path))
     
+    def set_config(self,sec:str | tuple,opt:str,value:Any):
+        """设置配置项"""
+        option = self.get_config(sec)
+        option[opt] = value
+    
+    def save(self):
+        with open(self.path,"w",encoding="utf-8") as fp:
+            fp.write(dumps(self._configs,indent=4))
+        
+    def get_config(self,sec:str | tuple) -> Any:
+        """获取配置项值"""
+        if isinstance(sec,str):
+            return self._configs[sec]
+        elif isinstance(sec,tuple):
+            tmp = self._configs
+            for key in sec:
+                tmp = tmp[key]
+            return tmp
+        
 class Config:
     '''ini或者cfg的配置文件读取与修改'''
     def __init__(self,path:str) -> None:
@@ -342,6 +370,8 @@ class Config:
                 return cfg_config(self.path)
             case "txt":
                 return txt_config(self.path)
+            case "json":
+                return json_config(self.path)
             case _:
                 raise ValueError("文件不支持")
 
@@ -442,7 +472,6 @@ class FileManage:
             self.rm(file_path)
         return unzip_file_path
         
-        
     @staticmethod
     def redecode(raw:str) -> str:
         """重新编码，防止中文乱码"""
@@ -461,9 +490,15 @@ class FileManage:
         rename(src,dst)
     
     def tree(self) ->list[str]:
+        """显示所有文件及其附属文件的路径"""
         return [join(dirpath,file) for dirpath,dirnames,filenames in walk(self.work_path) for file in filenames]
     
     def ls(self) ->list[str]:
+        """列出文件"""
+        return listdir(self.work_path)
+    
+    def lsdir(self) -> list[str]:
+        """列出文件路径"""
         return [join(self.work_path,path) for path in listdir(self.work_path)]
         
 class url_manage:
@@ -498,7 +533,6 @@ class url_manage:
         FileManage(save_path).save(data,save_file_path)
         return save_file_path
 
-
 class progress_bar:
     def __init__(self,max:int = 1,title:str=None,progress_item:str="■") -> None:
         if max == 0:
@@ -512,6 +546,9 @@ class progress_bar:
         self._progress_item=progress_item
         self.max_len = get_terminal_size().columns - 1
         self.title_max_len = 54
+        if wcswidth(self.title) >= 54:
+            self.title = self.title[:45] + "..."
+
         self.show(0)
     
     def store(self,byte:int) -> str:
@@ -586,9 +623,14 @@ class GTNH:
 
     @staticmethod
     def version():
-        for path in FileManage().ls():
-            if matcher := re.search(r"changelog from .* to (?P<version>.*)\.md",path):
-                return matcher.group("version")
+        global NOW_VERSION
+        if NOW_VERSION:
+            return NOW_VERSION
+        else:
+            for file in FileManage().ls():
+                if matcher := re.search(r"changelog.*to (?P<version>.*)\.md",file):
+                    NOW_VERSION = matcher.group("version")
+                    return NOW_VERSION
             else:
                 print("未找到version，是否已安装GTNH？")
                 system("pause")
