@@ -164,7 +164,8 @@ DEFAULT_CONFIG = [
         FileType.ATTR_ENABLED:True,
         FileType.ATTR_TYPE:FileType.ONLINE,
         FileType.ATTR_DESC:"NEI 拼音搜索",
-        FileType.ATTR_URL:"http://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar",
+        # FileType.ATTR_URL:"http://github.com/vfyjxf/NotEnoughCharacters/releases/download/1.7.10-1.5.2/NotEnoughCharacters-1.7.10-1.5.2.jar",
+        FileType.ATTR_URL:"https://github.com/GTNewHorizons/NotEnoughCharacters/releases/download/1.7.10-1.5.3-GTNH/nechar-1.7.10-1.5.3-GTNH.jar",
         FileType.ATTR_SP:"mods"
     },
     {
@@ -298,6 +299,147 @@ DEFAULT_CONFIG = [
         FileType.ATTR_URL:"https://mediafilez.forgecdn.net/files/2435/506/VeinMiner-1.7.10-0.36.0.496%2B28a7f13.jar",
         FileType.ATTR_SP:"mods",
         FileType.ATTR_SERVER_DETAIL:True
+    },
+    {
+        FileType.ATTR_ENABLED:True,
+        FileType.ATTR_TYPE:FileType.ONLINE,
+        FileType.ATTR_DESC:"Replay mod",
+        FileType.ATTR_URL:"https://github.com/Amber-siley/GTNH_add_mod_script/releases/download/Replay/replaymod-1.7.10-2.5.2.jar",
+        FileType.ATTR_SP:"mods",
+        FileType.ATTR_SCRIPT:[
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.ONLINE,
+                FileType.ATTR_DESC:"兼容GTNH的Replay修复mod",
+                FileType.ATTR_URL:"https://github.com/wohaopa/ReplayModFixMod/releases/download/1.1.0/replaymodfixmod-1.0.0-2-gd836d8f.jar",
+                FileType.ATTR_SP:"mods"
+            },
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.LOCAL,
+                FileType.ATTR_DESC:"Custom Main Menu 配置文件",
+                FileType.ATTR_FP:"config\\CustomMainMenu\\mainmenu.json",
+                FileType.ATTR_CONFIG_OPTION:[
+                    ("buttons","replayviewer",{
+                            "text" : "replaymod.gui.replayviewer",
+                            "normalTextColor": 4227327,
+                            "hoverTextColor": 16758315,
+                            "texture" : "mainmenu:textures/btn4.png",
+                            "posX" : 0,
+                            "posY" : -120,
+                            "width" : 150,
+                            "height" : 20,
+                            "imageWidth" : 1000,
+                            "imageHeight" : 1,
+                            "alignment": "column_bottom",
+                            "wrappedButton": 17890234
+                        }
+                    ),
+                    (("buttons","singleplayer"),"posY",-160),
+                    (("buttons","multiplayer"),"posY",-140)
+                ]
+            },
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.LOCAL,
+                FileType.ATTR_DESC:"Custom Main Menu 配置文件",
+                FileType.ATTR_FP:"config\\CustomMainMenu\\mainmenu_auto.json",
+                FileType.ATTR_CONFIG_OPTION:[
+                    ("buttons","replayviewer",{
+                            "text" : "replaymod.gui.replayviewer",
+                            "normalTextColor": 4227327,
+                            "hoverTextColor": 16758315,
+                            "texture" : "mainmenu:textures/btn4.png",
+                            "posX" : 0,
+                            "posY" : -120,
+                            "width" : 150,
+                            "height" : 20,
+                            "imageWidth" : 1000,
+                            "imageHeight" : 1,
+                            "alignment": "column_bottom",
+                            "wrappedButton": 17890234
+                        }
+                    ),
+                    (("buttons","singleplayer"),"posY",-160),
+                    (("buttons","multiplayer"),"posY",-140)
+                ]
+            },
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.LOCAL,
+                FileType.ATTR_DESC:"Custom Main Menu 配置文件",
+                FileType.ATTR_FP:"config\\CustomMainMenu\\mainmenu_large.json",
+                FileType.ATTR_CONFIG_OPTION:[
+                    ("buttons","replayviewer",{
+                            "text" : "replaymod.gui.replayviewer",
+                            "normalTextColor": 4227327,
+                            "hoverTextColor": 16758315,
+                            "texture" : "mainmenu:textures/btn4.png",
+                            "posX" : 0,
+                            "posY" : -120,
+                            "width" : 150,
+                            "height" : 20,
+                            "imageWidth" : 1000,
+                            "imageHeight" : 1,
+                            "alignment": "column_bottom",
+                            "wrappedButton": 17890234
+                        }
+                    ),
+                    (("buttons","singleplayer"),"posY",-160),
+                    (("buttons","multiplayer"),"posY",-140)
+                ]
+            },
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.LOCAL,
+                FileType.ATTR_DESC:"Custom Main Menu 配置文件",
+                FileType.ATTR_FP:"config\\CustomMainMenu\\mainmenu_normal.json",
+                FileType.ATTR_CONFIG_OPTION:[
+                    ("buttons","replayviewer",{
+                            "text" : "replaymod.gui.replayviewer",
+                            "normalTextColor": 4227327,
+                            "hoverTextColor": 16758315,
+                            "texture" : "mainmenu:textures/btn4.png",
+                            "posX" : 0,
+                            "posY" : -120,
+                            "width" : 150,
+                            "height" : 20,
+                            "imageWidth" : 1000,
+                            "imageHeight" : 1,
+                            "alignment": "column_bottom",
+                            "wrappedButton": 17890234
+                        }
+                    ),
+                    (("buttons","singleplayer"),"posY",-160),
+                    (("buttons","multiplayer"),"posY",-140)
+                ]
+            },
+            {
+                FileType.ATTR_ENABLED:True,
+                FileType.ATTR_TYPE:FileType.LOCAL,
+                FileType.ATTR_DESC:"Custom Main Menu 配置文件",
+                FileType.ATTR_FP:"config\\CustomMainMenu\\mainmenu_small.json",
+                FileType.ATTR_CONFIG_OPTION:[
+                    ("buttons","replayviewer",{
+                            "text" : "replaymod.gui.replayviewer",
+                            "normalTextColor": 4227327,
+                            "hoverTextColor": 16758315,
+                            "texture" : "mainmenu:textures/btn4.png",
+                            "posX" : 0,
+                            "posY" : -120,
+                            "width" : 300,
+                            "height" : 20,
+                            "imageWidth" : 1000,
+                            "imageHeight" : 1,
+                            "alignment": "column_bottom",
+                            "wrappedButton": 17890234
+                        }
+                    ),
+                    (("buttons","singleplayer"),"posY",-160),
+                    (("buttons","multiplayer"),"posY",-140)
+                ]
+            }
+        ]
     },
     {
         FileType.ATTR_ENABLED:True,
